@@ -8,14 +8,14 @@ import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
 // or set it to an image URL to show a photo cut into a leaf.
 type Milestone = { when: string; title: string; note?: string; weight?: string; photo?: string };
 const MILESTONES: Milestone[] = [
-  { when: 'November 20, 2025', title: 'Hello, world!', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: '' },
-  { when: '1 month', title: 'First smile', weight: '12 lbs 15 oz', photo: '' },
-  { when: '2 months', title: 'First laugh', weight: '15 lbs 4 oz', photo: '' },
-  { when: '4 months', title: 'Rolled over', weight: '18 lbs 6 oz', photo: '' },
-  { when: '6 months', title: 'First taste of poi', weight: '21 lbs 14 oz', photo: '' },
+  { when: 'November 20, 2025', title: '[Hello, world!]', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: '' },
+  { when: '1 month', title: '[First smile]', weight: '12 lbs 15 oz', photo: '' },
+  { when: '2 months', title: '[First laugh]', weight: '15 lbs 4 oz', photo: '' },
+  { when: '4 months', title: '[Rolled over]', weight: '18 lbs 6 oz', photo: '' },
+  { when: '6 months', title: '[First taste of poi]', weight: '21 lbs 14 oz', photo: '' },
   { when: '8 months', title: '[Milestone]', weight: '25 lbs 12 oz', photo: '' },
   { when: '9 months', title: '[Milestone]', weight: '15 lbs 14 oz', photo: '' },
-  { when: '10 months', title: 'First steps', weight: '27 lbs 4 oz', photo: '' },
+  { when: '10 months', title: '[First steps]', weight: '27 lbs 4 oz', photo: '' },
 ];
 
 // ── Palette: identical to the printed card ───────────────────────────────
