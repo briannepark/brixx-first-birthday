@@ -72,10 +72,12 @@ body {
   position: absolute;
   left: 16%;
   right: 16%;
-  top: 32%;
+  top: 8%;       /* nudged down past the notch so it sits in the leaf's visual center */
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2.8cqw;
   color: var(--cream);
   text-align: center;
@@ -96,7 +98,8 @@ body {
   margin-top: -1.6cqw;
 }
 .back-text .small {
-  font-size: 3.4cqw;
+  font-size: 4cqw;
+  margin-top: 1.2cqw;
   letter-spacing: 0.12em;
   line-height: 1.55;
 }
@@ -147,11 +150,21 @@ body {
 .facts {
   text-align: center;
   margin: 18px 0 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink);
+}
+.nowrap { white-space: nowrap; }
+.facts-place {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: var(--muted);
 }
 
 /* ── About Brixx ───────────────────────────────────────────── */

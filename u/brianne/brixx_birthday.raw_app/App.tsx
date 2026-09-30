@@ -115,16 +115,6 @@ function LeafCard() {
                   <span className="name">BRIXX</span>
                   <span className="turning">is turning one!</span>
                   <span className="small">Please join us to celebrate</span>
-                  <span className="small">
-                    Saturday, 21 November 2026
-                    <br />
-                    4:00 PM
-                  </span>
-                  <span className="small">
-                    45-064 Ka Hanahou Pl.
-                    <br />
-                    Kāneʻohe, HI 96744
-                  </span>
                 </span>
               </span>
             </span>
@@ -443,7 +433,10 @@ export default function App() {
       <main className="page">
         <div ref={heroRef} className="hero">
           <LeafCard />
-          <p className="facts">Saturday, 21 November 2026 · 4:00 PM</p>
+          <p className="facts">
+            <span className="nowrap">Saturday, 21 November 2026</span> · <span className="nowrap">4:00 PM</span>
+            <span className="facts-place">45-064 Ka Hanahou Pl., Kāneʻohe, HI 96744</span>
+          </p>
           <p className="directions">
             <a href={MAPS_URL} target="_blank" rel="noopener noreferrer">
               Get directions
