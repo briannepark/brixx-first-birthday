@@ -204,9 +204,22 @@ body {
 .milestone-text p:last-child { margin: 0; font-size: 16px; line-height: 1.45; }
 .milestone-text { flex: 1; }
 .milestone-text p:not(.milestone-when) { margin: 0; font-size: 16px; line-height: 1.45; }
-.growth { display: block; height: 8px; margin-top: 10px; border-radius: 99px; background: #e2e6d8; overflow: hidden; }
-.growth-fill { display: block; height: 100%; border-radius: 99px; background: var(--leaf); transform-origin: left; transform: scaleX(0); transition: transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s; }
-.milestone.is-in .growth-fill { transform: none; }
+.milestone-fact {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0 !important;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: #e4e9da;
+  color: var(--leaf-dark);
+  font-size: 13px !important;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.milestone-fact svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ── RSVP call to action ───────────────────────────────────── */
 .cta {
