@@ -74,7 +74,7 @@ export async function main(
     });
 
     const updated = Number(before) > 0;
-    const answer = yes ? `Yes: ${a} adult${a === 1 ? '' : 's'}, ${k} kid${k === 1 ? '' : 's'}` : "Can't make it";
+    const answer = yes ? `Yes: ${a} adult${a === 1 ? '' : 's'}, ${k} keiki` : "Can't make it";
     const lines = [
       `${guest}${updated ? ' updated their RSVP' : ' sent an RSVP'} for Brixx's 1st birthday.`,
       '',
@@ -83,14 +83,16 @@ export async function main(
       msg ? `Note for Brixx: ${msg}` : '',
       '',
       'Running totals (latest answer per guest)',
-      `Coming: ${totals.yes_parties} RSVPs, ${totals.adults} adults, ${totals.kids} kids (${Number(totals.adults) + Number(totals.kids)} people)`,
+      `Coming: ${totals.yes_parties} RSVPs, ${Number(totals.adults) + Number(totals.kids)} people`,
+      `  Adults: ${totals.adults}`,
+      `  Keiki: ${totals.kids}  (goodie bags)`,
       `Not coming: ${totals.no_parties}`,
     ].filter((l, i, arr) => l !== '' || (arr[i - 1] ?? '') !== '');
 
     await transporter.sendMail({
       from: `"Brixx's RSVPs" <${smtp.user}>`,
       to,
-      subject: `RSVP ${updated ? '(updated) ' : ''}from ${guest}: ${yes ? `yes, ${a + k} coming` : "can't make it"}`,
+      subject: `RSVP ${updated ? '(updated) ' : ''}from ${guest}: ${yes ? `yes, ${a} adult${a === 1 ? '' : 's'} + ${k} keiki` : "can't make it"}`,
       text: lines.join('\n'),
     });
   } catch (err) {

@@ -307,10 +307,13 @@ function RsvpForm({ onClose }: { onClose: () => void }) {
 
       {attending && (
         <div className="reveal-in">
-          <div className="field steppers">
-            <Stepper label="Adults" value={adults} min={0} onChange={setAdults} />
-            <Stepper label="Kids" value={kids} min={0} onChange={setKids} />
-          </div>
+          <fieldset className="field">
+            <legend>How many are coming?</legend>
+            <div className="steppers">
+              <Stepper label="Adults" value={adults} min={0} onChange={setAdults} />
+              <Stepper label="Keiki" value={kids} min={0} onChange={setKids} />
+            </div>
+          </fieldset>
           <label className="field">
             <span>
               Dietary notes <em>optional</em>

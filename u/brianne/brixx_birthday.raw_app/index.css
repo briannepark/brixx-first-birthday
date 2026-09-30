@@ -366,7 +366,7 @@ input[type='text']:focus, textarea:focus { outline: none; border-color: var(--le
 .choice.is-on span { background: var(--leaf); border-color: var(--leaf); color: var(--cream); }
 .choice input:focus-visible + span { box-shadow: 0 0 0 3px rgba(91, 118, 66, 0.35); }
 
-.steppers { flex-direction: row; gap: 12px; }
+.steppers { display: flex; flex-direction: row; gap: 12px; }
 .stepper {
   flex: 1;
   display: flex;
