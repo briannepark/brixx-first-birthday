@@ -3,18 +3,22 @@ import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
-// Replace the bracketed placeholders with the real milestones. Add, remove or
-// reorder entries freely. `photo` is optional: leave it '' for a leaf-shaped
-// placeholder, or set it to an image URL to show a photo cut into a leaf.
-type Milestone = { when: string; title: string; note: string; photo?: string };
+// Add, remove or reorder entries freely. `lbs` (a number) draws the growth bar.
+// `photo` is optional: leave it '' for a leaf-shaped placeholder, or set it to
+// an image URL to show a photo cut into a leaf.
+type Milestone = { when: string; title: string; note?: string; lbs?: number; photo?: string };
+const oz = (lb: number, o: number) => lb + o / 16;
 const MILESTONES: Milestone[] = [
-  { when: '[Month 2025]', title: '[Hello, world]', note: '[Where and when Brixx arrived]', photo: '' },
-  { when: '[Month]', title: '[First smile]', note: '[A line about the moment]', photo: '' },
-  { when: '[Month]', title: '[First laugh]', note: '[A line about the moment]', photo: '' },
-  { when: '[Month]', title: '[Rolled over]', note: '[A line about the moment]', photo: '' },
-  { when: '[Month]', title: '[First taste of poi]', note: '[A line about the moment]', photo: '' },
-  { when: '[Month]', title: '[First steps]', note: '[A line about the moment]', photo: '' },
+  { when: 'November 20, 2025', title: 'Hello, world!', note: 'Brixx Haloa Auguillard was born in Michigan at 10 lbs 2 oz.', lbs: oz(10, 2), photo: '' },
+  { when: '5 weeks', title: '12 lbs 15 oz', lbs: oz(12, 15), photo: '' },
+  { when: '2 months', title: '15 lbs 4 oz', lbs: oz(15, 4), photo: '' },
+  { when: '4 months', title: '18 lbs 6 oz', lbs: oz(18, 6), photo: '' },
+  { when: '6 months', title: '21 lbs 14 oz', lbs: oz(21, 14), photo: '' },
+  { when: '8 months', title: '25 lbs 12 oz', lbs: oz(25, 12), photo: '' },
+  { when: '9 months', title: '[?] lbs 14 oz', photo: '' },
+  { when: '10 months', title: '27 lbs 4 oz', lbs: oz(27, 4), photo: '' },
 ];
+const MAX_LBS = 28;
 
 // ── Palette: identical to the printed card ───────────────────────────────
 const LEAF_GREEN = '#5B7642';
@@ -169,7 +173,12 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
         <div className="milestone-text">
           <p className="milestone-when">{m.when}</p>
           <h3>{m.title}</h3>
-          <p>{m.note}</p>
+          {m.note && <p>{m.note}</p>}
+          {m.lbs !== undefined && (
+            <span className="growth" aria-hidden="true">
+              <span className="growth-fill" style={{ width: `${(m.lbs / MAX_LBS) * 100}%` }} />
+            </span>
+          )}
         </div>
       </div>
     </li>
@@ -183,7 +192,7 @@ function Milestones() {
       <div ref={ref} className={`section-head ${inView ? 'is-in' : ''}`}>
         <p className="eyebrow">A year of</p>
         <h2 id="about-title">BRIXX</h2>
-        <p className="lede">Twelve months of firsts, and the kalo keeps growing.</p>
+        <p className="lede">From 10 lbs 2 oz to 27 lbs 4 oz in ten months. The kalo keeps growing.</p>
       </div>
       <ol className="timeline">
         {MILESTONES.map((m, i) => (
