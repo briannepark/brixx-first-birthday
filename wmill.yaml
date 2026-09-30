@@ -1,0 +1,17 @@
+# Windmill CLI sync config — https://www.windmill.dev/docs/advanced/cli/sync
+#
+# Scopes `wmill sync push` to just this app, so it never touches anything
+# else in your Windmill workspace.
+defaultTs: bun
+
+includes:
+  - "u/brianne/brixx_birthday.raw_app/**"
+
+skipVariables: true
+skipResources: true
+skipSecrets: true
+skipScripts: true
+skipFlows: true
+skipSchedules: true
+skipTriggers: true
+skipFolders: true

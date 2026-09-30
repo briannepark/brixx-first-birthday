@@ -1,0 +1,35 @@
+name: Deploy to Windmill
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Windmill CLI
+        run: npm install -g windmill-cli
+
+      - name: Check the app builds
+        working-directory: u/brianne
+        run: |
+          (cd brixx_birthday.raw_app && npm install)
+          wmill app lint brixx_birthday.raw_app
+
+      - name: Deploy to Windmill
+        run: |
+          wmill sync push \
+            --base-url "${{ secrets.WM_BASE_URL }}" \
+            --workspace "${{ secrets.WM_WORKSPACE }}" \
+            --token "${{ secrets.WM_TOKEN }}" \
+            --yes

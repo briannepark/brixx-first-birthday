@@ -1,0 +1,14 @@
+summary: "Brixx turns one — invitation & RSVP"
+
+# Anyone with the link (or the QR code) can open the page and send an RSVP,
+# with no Windmill login. Remove this line to make the app private again.
+public: true
+
+# Friendly URL: <your windmill>/a/<workspace>/brixx-turns-one  (exact form shown after deploy)
+custom_path: "brixx-turns-one"
+
+data:
+  datatable: main
+  schema: brixx_birthday
+  tables:
+    - main/brixx_birthday:rsvps

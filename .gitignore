@@ -1,0 +1,4 @@
+node_modules/
+dist/
+wmill.d.ts
+.DS_Store
