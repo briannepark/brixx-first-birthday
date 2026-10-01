@@ -165,8 +165,9 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
           {m.weight && (
             <p className="milestone-fact">
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 8h14l-1.6 11.2a2 2 0 0 1-2 1.8H8.6a2 2 0 0 1-2-1.8L5 8z" />
-                <path d="M9 8a3 3 0 0 1 6 0" />
+                <rect x="3.5" y="4" width="17" height="16" rx="4" />
+                <path d="M8 10.5a4 4 0 0 1 8 0" />
+                <path d="M12 10.5l1.8-2.2" />
               </svg>
               <span className="sr-only">Weight: </span>
               {m.weight}
