@@ -15,7 +15,10 @@ u/brianne/brixx_birthday.raw_app/     ← the Windmill app (path u/brianne/brixx
   index.tsx, App.tsx, index.css       ← the page (React)
   leaf.ts                             ← the exact leaf outline + veins from the printed card
   backend/submit_rsvp.ts              ← saves the RSVP, emails you with the spreadsheet attached
-wmill.yaml                            ← limits `wmill sync push` to this app only
+u/brianne/brixx_invite_sender.raw_app/ ← private page for texting invitations (only you can open it)
+  App.tsx, index.css                  ← guest list, message, tap-to-text buttons
+  backend/load.ts, backend/save.ts    ← keeps the guest list in Windmill
+wmill.yaml                            ← limits `wmill sync push` to these two apps only
 .github/workflows/deploy.yml          ← build check + deploy on push to main
 ```
 
@@ -52,6 +55,15 @@ Repo → Settings → Secrets and variables → Actions. Same values as `ugc-por
 Push to `main`, or run **Deploy to Windmill** from the Actions tab. When it's done,
 open the app in Windmill to copy its public link (it uses the custom path
 `brixx-turns-one`), and point the QR code at that link.
+
+## Sending invitations by text
+
+Open the **Brixx turns one — send invitations** app in Windmill (on your phone is
+easiest). Paste the invitation link and your guest list (one "name, phone" per line),
+then tap **Text** next to each guest: Messages opens with their personalized invite
+and you hit send. The page remembers who you've texted and shows who has RSVP'd.
+The guest list is saved at `u/brianne/brixx_guest_list` (Resources, type "state").
+This page is private: there is no `public` line in its `raw_app.yaml`.
 
 ## Troubleshooting email
 

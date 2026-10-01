@@ -20,11 +20,13 @@ jobs:
       - name: Install Windmill CLI
         run: npm install -g windmill-cli
 
-      - name: Check the app builds
+      - name: Check the apps build
         working-directory: u/brianne
         run: |
-          (cd brixx_birthday.raw_app && npm install)
-          wmill app lint brixx_birthday.raw_app
+          for app in brixx_birthday.raw_app brixx_invite_sender.raw_app; do
+            (cd "$app" && npm install)
+            wmill app lint "$app"
+          done
 
       - name: Deploy to Windmill
         run: |
