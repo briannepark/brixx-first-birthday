@@ -310,7 +310,13 @@ export async function main(
     const smtp: any = await wmill.getResource(SMTP_RESOURCE);
     const missing = ['host', 'port', 'user', 'password'].filter((f) => !smtp?.[f]);
     if (missing.length) throw new Error(`SMTP resource is missing: ${missing.join(', ')}`);
-    step(current, true, `host ${smtp.host}, port ${smtp.port}, user ${smtp.user}`);
+    // Sanity-check the credentials without ever logging the password itself.
+    const pw = String(smtp.password).replace(/\s+/g, '');
+    const pwCheck = /^[a-z]{16}$/.test(pw)
+      ? 'password looks like an app password (16 lowercase letters)'
+      : `password does NOT look like a Gmail app password (${pw.length} characters${/[^a-z]/.test(pw) ? ', includes non-lowercase-letters' : ''}${pw.startsWith('$') ? ', looks like an unresolved $var/$res reference' : ''})`;
+    const userCheck = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(smtp.user)) ? '' : ' — user should be your full email address';
+    step(current, true, `host ${smtp.host}, port ${smtp.port}, user "${smtp.user}"${userCheck}; ${pwCheck}`);
 
     current = 'Load notify-email variable';
     const to = String((await wmill.getVariable(NOTIFY_EMAIL_VARIABLE)) ?? '').trim();
