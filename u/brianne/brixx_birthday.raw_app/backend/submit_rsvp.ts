@@ -9,6 +9,51 @@ import nodemailer from 'nodemailer';
 const SMTP_RESOURCE = 'u/brianne/rsvp_smtp';
 const NOTIFY_EMAIL_VARIABLE = 'u/brianne/rsvp_notify_email';
 const RSVP_STORE = 'u/brianne/brixx_rsvps';
+// Troubleshooting log: one entry per RSVP saying whether it saved and whether the
+// email went out (or exactly which step failed). Created automatically; newest first.
+// Open it in Windmill: Resources → u/brianne/brixx_rsvp_log
+const RSVP_LOG = 'u/brianne/brixx_rsvp_log';
+const LOG_KEEP = 300;
+
+type LogStep = { step: string; ok: boolean; detail?: string };
+type LogEntry = { at: string; guest: string; rsvpSaved: boolean; emailSent: boolean; steps: LogStep[]; error?: string };
+
+function describeError(err: unknown) {
+  const e = err as any;
+  const parts = [e?.message ?? String(err)];
+  if (e?.code) parts.push(`code ${e.code}`);
+  if (e?.responseCode) parts.push(`SMTP ${e.responseCode}`);
+  if (e?.response && e.response !== e.message) parts.push(String(e.response));
+  if (e?.command) parts.push(`during ${e.command}`);
+  return parts.join(' | ').slice(0, 600);
+}
+
+// Explain the errors people actually hit, in plain words.
+function hint(detail: string) {
+  const d = detail.toLowerCase();
+  if (d.includes('rsvp_smtp') && (d.includes('not found') || d.includes('404') || d.includes('does not exist')))
+    return 'SMTP resource not found: create it at exactly u/brianne/rsvp_smtp.';
+  if (d.includes('rsvp_notify_email') && (d.includes('not found') || d.includes('404') || d.includes('does not exist')))
+    return 'Notify-email variable not found: create it at exactly u/brianne/rsvp_notify_email.';
+  if (d.includes('535') || d.includes('badcredentials') || d.includes('username and password not accepted') || d.includes('eauth'))
+    return 'Gmail rejected the login: use a 16-character app password (not your normal password) and your full Gmail address as user.';
+  if (d.includes('etimedout') || d.includes('econnrefused') || d.includes('enotfound') || d.includes('esocket'))
+    return 'Could not reach the mail server: check host smtp.gmail.com and port 465.';
+  if (d.includes('no recipients') || d.includes('eenvelope'))
+    return 'No valid "to" address: check the value of u/brianne/rsvp_notify_email.';
+  return '';
+}
+
+async function writeLog(entry: LogEntry) {
+  console.log('RSVP log:', JSON.stringify(entry, null, 2));
+  try {
+    const stored = await wmill.getState(RSVP_LOG);
+    const list: LogEntry[] = Array.isArray(stored?.log) ? stored.log : [];
+    await wmill.setState({ log: [entry, ...list].slice(0, LOG_KEEP) }, RSVP_LOG);
+  } catch (err) {
+    console.log('Could not write the troubleshooting log:', describeError(err));
+  }
+}
 
 type Rsvp = {
   id: string;
@@ -237,22 +282,56 @@ export async function main(
     note: clean(note, 1000),
   };
 
-  const all = await appendSafely(entry);
+  const log: LogEntry = { at: entry.at, guest, rsvpSaved: false, emailSent: false, steps: [] };
+  const step = (name: string, ok: boolean, detail?: string) => {
+    log.steps.push({ step: name, ok, ...(detail ? { detail } : {}) });
+    console.log(`${ok ? '✔' : '✘'} ${name}${detail ? ` — ${detail}` : ''}`);
+  };
+
+  let all: Rsvp[];
+  try {
+    all = await appendSafely(entry);
+    log.rsvpSaved = true;
+    step('Save RSVP', true, `${all.length} submissions stored`);
+  } catch (err) {
+    const d = describeError(err);
+    step('Save RSVP', false, d);
+    log.error = `RSVP not saved: ${d}`;
+    await writeLog(log);
+    throw err; // the guest sees an error and can try again
+  }
+
   const sum = summarize(all);
   const updated = sum.history.get(key(guest))!.length > 1;
 
   // The RSVP is saved at this point; a mail problem shouldn't show the guest an error.
+  let current = 'Load SMTP resource';
   try {
     const smtp: any = await wmill.getResource(SMTP_RESOURCE);
-    const to = await wmill.getVariable(NOTIFY_EMAIL_VARIABLE);
+    const missing = ['host', 'port', 'user', 'password'].filter((f) => !smtp?.[f]);
+    if (missing.length) throw new Error(`SMTP resource is missing: ${missing.join(', ')}`);
+    step(current, true, `host ${smtp.host}, port ${smtp.port}, user ${smtp.user}`);
+
+    current = 'Load notify-email variable';
+    const to = String((await wmill.getVariable(NOTIFY_EMAIL_VARIABLE)) ?? '').trim();
+    if (!to.includes('@')) throw new Error(`Variable value doesn't look like an email address: "${to}"`);
+    step(current, true, `sending to ${to}`);
+
+    current = 'Connect and log in to mail server';
     const port = Number(smtp.port ?? 465);
     const transporter = nodemailer.createTransport({
       host: smtp.host,
       port,
       secure: port === 465,
-      auth: { user: smtp.user, pass: smtp.password },
+      auth: { user: smtp.user, pass: String(smtp.password).replace(/\s+/g, '') },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
     });
-    await transporter.sendMail({
+    await transporter.verify();
+    step(current, true);
+
+    current = 'Send email';
+    const info = await transporter.sendMail({
       from: `"Brixx's RSVPs" <${smtp.user}>`,
       to,
       subject: `RSVP ${updated ? '(updated) ' : ''}from ${guest}: ${yes ? `yes, ${a} adult${a === 1 ? '' : 's'} + ${k} keiki` : 'no'} · ${sum.yesCount} yes so far`,
@@ -260,9 +339,17 @@ export async function main(
       html: toHtml(entry, updated, sum),
       attachments: [{ filename: 'brixx-rsvps.csv', content: toCsv(all, sum), contentType: 'text/csv; charset=utf-8' }],
     });
+    const rejected = (info.rejected ?? []).map(String);
+    if (rejected.length) throw new Error(`Mail server rejected: ${rejected.join(', ')} (${info.response ?? ''})`);
+    step(current, true, `accepted by server: ${info.response ?? 'ok'} (id ${info.messageId ?? '?'})`);
+    log.emailSent = true;
   } catch (err) {
-    console.log('RSVP saved, but the notification email failed:', err);
+    const d = describeError(err);
+    const h = hint(`${current} ${d}`);
+    step(current, false, h ? `${d} → ${h}` : d);
+    log.error = `Email not sent at "${current}": ${h || d}`;
   }
 
+  await writeLog(log);
   return { ok: true };
 }

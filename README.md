@@ -53,6 +53,13 @@ Push to `main`, or run **Deploy to Windmill** from the Actions tab. When it's do
 open the app in Windmill to copy its public link (it uses the custom path
 `brixx-turns-one`), and point the QR code at that link.
 
+## Troubleshooting email
+
+Every RSVP writes an entry to **Resources → `u/brianne/brixx_rsvp_log`** in Windmill
+(newest first): whether the RSVP saved, whether the email was sent, and if not,
+the exact step that failed with a plain-language hint. The same step-by-step
+output appears in the logs of each `submit_rsvp` run under **Runs**.
+
 ## Editing
 
 - Wording on the leaf or form: `App.tsx`
