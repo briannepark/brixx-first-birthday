@@ -428,6 +428,7 @@ input[type='text']:focus, textarea:focus { outline: none; border-color: var(--le
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 .error { margin: 0; color: var(--error); font-size: 15px; }
+.error-detail { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); word-break: break-word; }
 
 .submit {
   min-height: 54px;

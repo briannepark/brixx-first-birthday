@@ -219,7 +219,7 @@ function Stepper(props: { label: string; value: number; min: number; onChange: (
   );
 }
 
-type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'done'; attending: boolean; name: string } | { kind: 'error'; message: string };
+type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'done'; attending: boolean; name: string } | { kind: 'error'; message: string; detail?: string };
 
 function FallingLeaves() {
   return (
@@ -264,8 +264,12 @@ function RsvpForm({ onClose }: { onClose: () => void }) {
       } else {
         setStatus({ kind: 'done', attending, name: name.trim().split(/\s+/)[0] });
       }
-    } catch {
-      setStatus({ kind: 'error', message: 'Something went wrong sending your RSVP. Please try again.' });
+    } catch (err) {
+      // Keep the friendly message for guests, but surface the real reason
+      // (small print + browser console) so problems can be diagnosed.
+      const detail = err instanceof Error ? err.message : String(err);
+      console.error('submit_rsvp failed:', err);
+      setStatus({ kind: 'error', message: 'Something went wrong sending your RSVP. Please try again.', detail: detail.split('\n')[0].slice(0, 240) });
     }
   }
 
@@ -341,6 +345,7 @@ function RsvpForm({ onClose }: { onClose: () => void }) {
       {status.kind === 'error' && (
         <p className="error" role="alert">
           {status.message}
+          {status.detail && <small className="error-detail">Details: {status.detail}</small>}
         </p>
       )}
 
