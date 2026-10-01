@@ -303,11 +303,11 @@ function RsvpForm({ onClose }: { onClose: () => void }) {
         <div className="choices">
           <label className={`choice ${attending === true ? 'is-on' : ''}`}>
             <input type="radio" name="attending" checked={attending === true} onChange={() => setAttending(true)} />
-            <span>Joyfully yes</span>
+            <span>Yes</span>
           </label>
           <label className={`choice ${attending === false ? 'is-on' : ''}`}>
             <input type="radio" name="attending" checked={attending === false} onChange={() => setAttending(false)} />
-            <span>Sadly, no</span>
+            <span>No</span>
           </label>
         </div>
       </fieldset>
