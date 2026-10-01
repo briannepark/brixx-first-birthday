@@ -1,8 +1,9 @@
 # Brixx's 1st birthday — invitation & RSVP
 
 The kalo-leaf invitation as a web page, hosted on Windmill. Guests tap the leaf to
-turn it over for the details, then RSVP on the same page. Each RSVP is saved to a
-Windmill data table and emails you the reply plus the running totals.
+turn it over for the details, then RSVP on the same page. Each RSVP is saved inside
+Windmill and emails you the reply, the running totals and the full guest list as a
+spreadsheet (brixx-rsvps.csv).
 
 Deploys automatically on every push to `main`.
 
@@ -10,36 +11,22 @@ Deploys automatically on every push to `main`.
 
 ```
 u/brianne/brixx_birthday.raw_app/     ← the Windmill app (path u/brianne/brixx_birthday)
-  raw_app.yaml                        ← public, custom URL "brixx-turns-one", data table access
+  raw_app.yaml                        ← public, custom URL "brixx-turns-one"
   index.tsx, App.tsx, index.css       ← the page (React)
   leaf.ts                             ← the exact leaf outline + veins from the printed card
-  backend/submit_rsvp.ts              ← saves the RSVP, emails you
-  sql_to_apply/*.sql                  ← creates the rsvps table (run once, see step 1)
+  backend/submit_rsvp.ts              ← saves the RSVP, emails you with the spreadsheet attached
 wmill.yaml                            ← limits `wmill sync push` to this app only
 .github/workflows/deploy.yml          ← build check + deploy on push to main
 ```
 
-Guest answers are stored in `brixx_birthday.rsvps`. If someone RSVPs again with the
-same name, both rows are kept and the totals use their latest answer.
+RSVPs are stored in your Windmill workspace as a resource at `u/brianne/brixx_rsvps`
+(created automatically on the first RSVP; open **Resources** in Windmill to see it).
+Every submission is kept; if someone RSVPs again with the same name, the totals and
+spreadsheet use their latest answer. No database or data table is needed.
 
 ## One-time setup
 
-### 1. Data table
-
-In Windmill: **Workspace settings → Data Tables**. Make sure one named `main`
-exists (create it if the list is empty).
-
-Then create the RSVP table by running the two files in
-`u/brianne/brixx_birthday.raw_app/sql_to_apply/`, in order, against `main`:
-
-- **From your computer:** `cd u/brianne/brixx_birthday.raw_app && npm install && wmill app dev .`
-  The dev server notices the SQL files and asks you to apply them.
-- **Or in Windmill:** open the `main` data table's SQL explorer and paste
-  `000_create_schema.sql`, then `001_create_rsvps.sql`.
-
-After that, you can view every RSVP in the data table viewer.
-
-### 2. Email (Gmail app password)
+### 1. Email (Gmail app password)
 
 1. Google Account → Security → turn on **2-Step Verification** (required for app passwords).
 2. Google Account → search **App passwords** → create one called "Windmill RSVP". Copy the 16-character password.
@@ -52,7 +39,7 @@ After that, you can view every RSVP in the data table viewer.
 
 Neither the password nor your address is stored in this repo.
 
-### 3. GitHub secrets
+### 2. GitHub secrets
 
 Repo → Settings → Secrets and variables → Actions. Same values as `ugc-portfolio`:
 
@@ -60,7 +47,7 @@ Repo → Settings → Secrets and variables → Actions. Same values as `ugc-por
 - `WM_WORKSPACE` your workspace id
 - `WM_TOKEN` a Windmill token that can deploy apps
 
-### 4. Deploy
+### 3. Deploy
 
 Push to `main`, or run **Deploy to Windmill** from the Actions tab. When it's done,
 open the app in Windmill to copy its public link (it uses the custom path

@@ -6,9 +6,3 @@ public: true
 
 # Friendly URL: <your windmill>/a/<workspace>/brixx-turns-one  (exact form shown after deploy)
 custom_path: "brixx-turns-one"
-
-data:
-  datatable: main
-  schema: brixx_birthday
-  tables:
-    - main/brixx_birthday:rsvps
