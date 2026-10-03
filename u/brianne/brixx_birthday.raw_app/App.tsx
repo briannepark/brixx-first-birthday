@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
-import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_5, PHOTO_MONTH_7, PHOTO_MONTH_8, PHOTO_MONTH_9 } from './photos';
+import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_5, PHOTO_DAYCARE, PHOTO_CHICAGO, PHOTO_WATER_PARK } from './photos';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
 // Add, remove or reorder entries freely.
@@ -23,10 +23,25 @@ const MILESTONES: Milestone[] = [
     photo: PHOTO_MONTH_4,
   },
   { heading: 'Month 5', events: ['First taste of poi', 'First laugh', 'First Easter'], photo: PHOTO_MONTH_5 },
-  { heading: 'Month 6', weight: '21 lbs 14 oz', events: ['Road trip to Texas and Louisiana', 'Met his cousins (and his first time playing with other babies)'], photo: '' },
-  { heading: 'Month 7', events: ['Learned to hold his own bottle', 'First day of daycare!'], photo: PHOTO_MONTH_7 },
-  { heading: 'Month 8', weight: '25 lbs 12 oz', events: ['Road trip to Chicago', 'Sat up and rolled over'], photo: PHOTO_MONTH_8 },
-  { heading: 'Month 9', weight: '25 lbs 14 oz', events: ['Mini road trip to Ohio', 'Went to a water park', 'First flight to Las Vegas. Got his wings!'], photo: PHOTO_MONTH_9 },
+  {
+    heading: 'Month 6',
+    weight: '21 lbs 14 oz',
+    events: ['Road trip to Texas and Louisiana', 'Met his cousins (and his first time playing with other babies)', 'First day of daycare!'],
+    photo: PHOTO_DAYCARE,
+  },
+  { heading: 'Month 7', events: ['Learned to hold his own bottle', 'Road trip to Chicago'], photo: PHOTO_CHICAGO },
+  {
+    heading: 'Month 8',
+    weight: '25 lbs 12 oz',
+    events: ['Sat up and rolled over', 'Mini road trip to Ohio', 'Went to a water park', 'First flight to Las Vegas. Got his wings!'],
+    photo: PHOTO_WATER_PARK,
+  },
+  {
+    heading: 'Month 9',
+    weight: '25 lbs 14 oz',
+    events: ['Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire'],
+    photo: '',
+  },
   { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawled and started pulling himself up'], photo: '' },
 ];
 
