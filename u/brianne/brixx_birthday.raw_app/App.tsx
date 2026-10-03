@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
-import { PHOTO_BIRTH } from './photos';
+import { PHOTO_BIRTH, PHOTO_MONTH_1 } from './photos';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
 // Add, remove or reorder entries freely.
@@ -13,7 +13,7 @@ import { PHOTO_BIRTH } from './photos';
 type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: string[]; photo?: string };
 const MILESTONES: Milestone[] = [
   { when: 'November 20, 2025', heading: '[Hello, world!]', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Michigan'], photo: PHOTO_BIRTH },
-  { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: '' },
+  { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: PHOTO_MONTH_1 },
   { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First Christmas', 'First bath', 'First time in a high chair'], photo: '' },
   { heading: 'Month 3', events: ['Slept in his crib for the first time'], photo: '' },
   {
