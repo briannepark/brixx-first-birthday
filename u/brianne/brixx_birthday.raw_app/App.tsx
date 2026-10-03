@@ -15,7 +15,7 @@ import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4
 type Moment = string | { text: string; trip: 'car' | 'plane' };
 type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: Moment[]; photo?: string };
 const MILESTONES: Milestone[] = [
-  { when: 'November 20, 2025', heading: '[Hello, world!]', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Michigan'], photo: PHOTO_BIRTH },
+  { when: 'November 20, 2025', heading: 'Hello, world!', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Troy, Michigan', 'After 4 hours of active labor'], photo: PHOTO_BIRTH },
   { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: PHOTO_MONTH_1 },
   { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First Christmas', 'First bath', 'First time in a high chair'], photo: PHOTO_MONTH_2 },
   { heading: 'Month 3', events: ['Slept in his crib for the first time'], photo: PHOTO_MONTH_3 },
