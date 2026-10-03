@@ -226,7 +226,12 @@ function Trip({ kind, id }: { kind: 'car' | 'plane'; id: string }) {
 function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
   const [ref, inView] = useReveal<HTMLLIElement>();
   return (
-    <li ref={ref} className={`milestone ${inView ? 'is-in' : ''}`} style={{ transitionDelay: `${Math.min(i, 2) * 60}ms` }}>
+    <li
+      ref={ref}
+      className={`milestone ${inView ? 'is-in' : ''}`}
+      // Each month's leaf on the vine is a little bigger than the last, like the kalo growing.
+      style={{ transitionDelay: `${Math.min(i, 2) * 60}ms`, '--grow': 0.75 + (0.85 * i) / Math.max(1, MILESTONES.length - 1) } as React.CSSProperties}
+    >
       <span className="milestone-node" aria-hidden="true">
         <svg viewBox="0 0 600 660">
           <path d={LEAF} />

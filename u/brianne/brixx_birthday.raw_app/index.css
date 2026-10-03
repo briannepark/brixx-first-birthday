@@ -186,11 +186,11 @@ body {
 }
 .lede { margin: 0 auto; max-width: 30ch; font-size: 17px; line-height: 1.5; color: var(--muted); }
 
-.timeline { list-style: none; margin: 32px 0 0; padding: 0 0 0 34px; position: relative; }
+.timeline { list-style: none; margin: 32px 0 0; padding: 0 0 0 46px; position: relative; }
 .timeline::before {
   content: '';
   position: absolute;
-  left: 11px;
+  left: 20px;
   top: 8px;
   bottom: 8px;
   width: 2px;
@@ -200,7 +200,7 @@ body {
 /* The green part of the vine, grown by script as you scroll */
 .vine-fill {
   position: absolute;
-  left: 11px;
+  left: 20px;
   top: 8px;
   width: 2px;
   height: 0;
@@ -212,7 +212,14 @@ body {
 }
 .milestone { position: relative; margin: 0 0 18px; opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .milestone.is-in { opacity: 1; transform: none; }
-.milestone-node { position: absolute; left: -34px; top: 14px; width: 24px; height: 26px; }
+.milestone-node {
+  position: absolute;
+  /* centered on the vine, sized by --grow (small at birth, biggest at month 10) */
+  left: calc(-25px - 12px * var(--grow, 1));
+  top: calc(27px - 13px * var(--grow, 1));
+  width: calc(24px * var(--grow, 1));
+  height: calc(26px * var(--grow, 1));
+}
 .milestone-node svg {
   width: 100%;
   height: 100%;
