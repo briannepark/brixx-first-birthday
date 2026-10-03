@@ -49,7 +49,7 @@ const MILESTONES: Milestone[] = [
     photo: PHOTO_MONTH_9,
     album: 'month-9',
   },
-  { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawling and pulling himself up'], photo: PHOTO_MONTH_10 },
+  { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawling and pulling himself up'], photo: PHOTO_MONTH_10, album: 'month-10' },
   { heading: 'Month 11', weight: 'TBD', events: ['Stay tuned…'], photo: '' },
   { when: 'November 20, 2026', heading: 'One year old!', photo: '', big: true },
 ];

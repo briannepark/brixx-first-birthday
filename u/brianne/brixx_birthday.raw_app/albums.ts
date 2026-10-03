@@ -19,6 +19,7 @@ export const fallbackUrl = (url: string) =>
   url.replace(/^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+\/[^@]+)@([^/]+)\//, 'https://raw.githubusercontent.com/$1/$2/');
 
 const M9 = 'b1212dbb11aeae4ba14d05f9f0525aa12c26ebfa';
+const M10 = 'be7db6bfc5b582412c4cfc5c4af03aba1f0e300b';
 
 export const ALBUMS: Record<string, Album> = {
   'month-9': {
@@ -26,6 +27,18 @@ export const ALBUMS: Record<string, Album> = {
     items: [
       { kind: 'photo', src: media(M9, 'month-9-swing.jpg') },
       { kind: 'video', src: media(M9, 'month-9-swing.mp4'), poster: media(M9, 'month-9-swing-poster.jpg') },
+      { kind: 'video', src: media(M10, 'month-9-rainbow.mp4'), poster: media(M10, 'month-9-rainbow-poster.jpg') },
+    ],
+  },
+  'month-10': {
+    cover: media(M10, 'month-10-grin.jpg'),
+    items: [
+      { kind: 'photo', src: media(M10, 'month-10-sitting.jpg') },
+      { kind: 'photo', src: media(M10, 'month-10-crawl.jpg') },
+      { kind: 'video', src: media(M10, 'month-10-bookshelf.mp4'), poster: media(M10, 'month-10-bookshelf-poster.jpg') },
+      { kind: 'video', src: media(M10, 'month-10-book.mp4'), poster: media(M10, 'month-10-book-poster.jpg') },
+      { kind: 'video', src: media(M10, 'month-10-sitting-up.mp4'), poster: media(M10, 'month-10-sitting-up-poster.jpg') },
+      { kind: 'video', src: media(M10, 'month-10-snack.mp4'), poster: media(M10, 'month-10-snack-poster.jpg') },
     ],
   },
 };
