@@ -769,11 +769,9 @@ function useVisibleBand(): Band | null {
 
     const check = () => {
       const want = frameIsStretched();
-      (window as any).__brixxMode = mode + (want ? ' (stretched)' : ' (not stretched)');
       if (want && mode === 'none') {
         mode = viaParents() ? 'parent' : 'observer';
         if (mode === 'observer') viaObserver();
-        (window as any).__brixxMode = mode + ' (stretched)';
       } else if (!want && mode !== 'none') {
         cleanup?.();
         cleanup = undefined;
@@ -850,7 +848,6 @@ function useToolbarClearance() {
       }
       const hidden = Math.max(0, Math.round(window.innerHeight - visBottom));
       root.style.setProperty('--hidden-bottom', hidden + 'px');
-      (window as any).__brixxHidden = hidden;
       // The hero height is set once (and again on rotation) so the page doesn't
       // jump around when the browser's toolbars slide in and out.
       if (window.innerWidth !== lastWidth) {
@@ -887,84 +884,13 @@ function useToolbarClearance() {
   }, []);
 }
 
-// ── Troubleshooting readout ──────────────────────────────────────────────
-// Hidden by default. Tap the date line three times quickly to show it; it sits
-// right under the down arrow and updates live while you scroll.
-const BUILD = 'pill-fix-2';
-
-function DebugPanel({ band, pastHero, ctaVisible }: { band: Band | null; pastHero: boolean; ctaVisible: boolean }) {
-  const [, tick] = useState(0);
-  const [events, setEvents] = useState<string[]>([]);
-  useEffect(() => {
-    const t = window.setInterval(() => tick((n) => n + 1), 250);
-    const seen = new Set<string>();
-    const note = (name: string) => () => {
-      if (seen.has(name)) return;
-      seen.add(name);
-      setEvents((e) => [...e, name]);
-    };
-    const subs: Array<[EventTarget, string, () => void]> = [
-      [window, 'scroll', note('win-scroll')],
-      [document, 'scroll', note('doc-scroll(capture)')],
-      [window, 'touchmove', note('touchmove')],
-      [window, 'resize', note('resize')],
-    ];
-    subs.forEach(([t2, n, f]) => t2.addEventListener(n, f, { passive: true, capture: true } as any));
-    return () => {
-      window.clearInterval(t);
-      subs.forEach(([t2, n, f]) => t2.removeEventListener(n, f, { capture: true } as any));
-    };
-  }, []);
-  let inFrame = '?';
-  let parentAccess = 'no';
-  try { inFrame = String(window.self !== window.top); } catch { inFrame = 'true (blocked)'; }
-  try { parentAccess = window.frameElement ? 'yes' : 'no'; } catch { parentAccess = 'blocked'; }
-  const de = document.documentElement;
-  const marker = document.querySelector('.top-marker')?.getBoundingClientRect();
-  const pill = document.querySelector('.float-rsvp')?.getBoundingClientRect();
-  const vv = window.visualViewport;
-  const rows: Array<[string, string]> = [
-    ['build', BUILD],
-    ['in frame', inFrame],
-    ['parent access', parentAccess],
-    ['innerHeight', String(window.innerHeight)],
-    ['visualViewport', vv ? `${Math.round(vv.height)} @ ${Math.round(vv.offsetTop)}` : 'n/a'],
-    ['scrollHeight', String(de.scrollHeight)],
-    ['body scrollTop', String(document.body.scrollTop)],
-    ['scrollY', String(Math.round(window.scrollY))],
-    ['marker top', marker ? String(Math.round(marker.top)) : 'n/a'],
-    ['mode', String((window as any).__brixxMode ?? 'n/a')],
-    ['hidden bottom', String((window as any).__brixxHidden ?? 'n/a')],
-    ['visible-h', getComputedStyle(document.documentElement).getPropertyValue('--visible-h') || 'n/a'],
-    ['band', band ? `${band.top}–${band.bottom}` : 'none'],
-    ['pastHero', String(pastHero)],
-    ['ctaVisible', String(ctaVisible)],
-    ['pill top', pill ? String(Math.round(pill.top)) : 'n/a'],
-    ['events', events.join(', ') || 'none yet'],
-  ];
-  return (
-    <div className="debug-panel">
-      {rows.map(([k, v]) => (
-        <div key={k}><b>{k}</b> {v}</div>
-      ))}
-      <div className="debug-ua">{navigator.userAgent}</div>
-    </div>
-  );
-}
-
 export default function App() {
   const [open, setOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [ctaVisible, setCtaVisible] = useState(false);
   const band = useVisibleBand();
   useToolbarClearance();
-  const [debug, setDebug] = useState(false);
-  const taps = useRef<number[]>([]);
-  const onFactsTap = () => {
-    const now = Date.now();
-    taps.current = [...taps.current.filter((t) => now - t < 1200), now];
-    if (taps.current.length >= 3) { taps.current = []; setDebug((d) => !d); }
-  };
+
   const heroRef = useRef<HTMLDivElement | null>(null);
 
   // The floating RSVP pill appears at the bottom of the screen (just under the
@@ -1019,7 +945,7 @@ export default function App() {
         <div className="top-marker" aria-hidden="true" />
         <div ref={heroRef} className="hero">
           <LeafCard />
-          <p className="facts" onClick={onFactsTap}>
+          <p className="facts">
             <span className="nowrap">Saturday, 21 November 2026</span> · <span className="nowrap">4:00 PM</span>
             <span className="facts-place">45-064 Ka Hanahou Pl., Kāneʻohe, HI 96744</span>
           </p>
@@ -1033,7 +959,6 @@ export default function App() {
               <path d="M6 9l6 6 6-6" />
             </svg>
           </button>
-          {debug && <DebugPanel band={band} pastHero={pastHero} ctaVisible={ctaVisible} />}
         </div>
         <Milestones />
         <RsvpInvite onOpen={() => setOpen(true)} />
