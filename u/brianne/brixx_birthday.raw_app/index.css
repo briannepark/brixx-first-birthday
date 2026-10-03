@@ -168,7 +168,10 @@ body {
 }
 
 /* ── About Brixx ───────────────────────────────────────────── */
-.about { margin: 140px 0 8px; } /* breathing room so the RSVP pill appears before the milestones */
+.about { margin: 120px 0 8px; }
+/* The opening view fills the screen, leaving an empty band under the down arrow
+   where the RSVP pill appears once the guest starts scrolling. */
+.hero { min-height: calc(100vh - 28px); min-height: calc(100svh - 28px); }
 .section-head { text-align: center; opacity: 0; transform: translateY(14px); transition: opacity 0.8s ease, transform 0.8s ease; }
 .section-head.is-in { opacity: 1; transform: none; }
 .eyebrow { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }

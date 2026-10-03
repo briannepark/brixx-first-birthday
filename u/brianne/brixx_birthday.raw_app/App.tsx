@@ -497,25 +497,23 @@ export default function App() {
   const [ctaVisible, setCtaVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
 
-  // The floating RSVP pill shows as soon as the down arrow has scrolled off the
-  // top of the screen, and hides again while the big RSVP section is on screen
-  // so the two never overlap.
+  // The floating RSVP pill appears at the bottom of the screen (just under the
+  // down arrow) as soon as the guest starts scrolling, and hides again while the
+  // big RSVP section is on screen so the two never overlap.
   useEffect(() => {
-    const cue = document.querySelector('.scroll-cue');
+    const onScroll = () => setPastHero(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
     const cta = document.querySelector('.cta');
-    if (!cue || !cta || !('IntersectionObserver' in window)) return;
-    const io = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) =>
-          e.target === cue
-            ? setPastHero(!e.isIntersecting && e.boundingClientRect.top < 0)
-            : setCtaVisible(e.isIntersecting),
-        ),
-      { threshold: 0 },
-    );
-    io.observe(cue);
-    io.observe(cta);
-    return () => io.disconnect();
+    let io: IntersectionObserver | undefined;
+    if (cta && 'IntersectionObserver' in window) {
+      io = new IntersectionObserver(([e]) => setCtaVisible(e.isIntersecting), { threshold: 0 });
+      io.observe(cta);
+    }
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      io?.disconnect();
+    };
   }, []);
   const showFloat = pastHero && !ctaVisible && !open;
 
