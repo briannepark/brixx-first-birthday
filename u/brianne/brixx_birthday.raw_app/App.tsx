@@ -539,7 +539,7 @@ function RsvpForm({ onClose }: { onClose: () => void }) {
   );
 }
 
-function RsvpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+function RsvpSheet({ open, onClose, band }: { open: boolean; onClose: () => void; band: Band | null }) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [formKey, setFormKey] = useState(0);
 
@@ -559,7 +559,11 @@ function RsvpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   }, [open, onClose]);
 
   return (
-    <div className={`sheet ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+    <div
+      className={`sheet ${open ? 'is-open' : ''} ${band ? 'is-framed' : ''}`}
+      aria-hidden={!open}
+      style={band ? { position: 'absolute', top: band.top, height: band.bottom - band.top, bottom: 'auto', left: 0, right: 0 } : undefined}
+    >
       <div className="sheet-backdrop" onClick={onClose} />
       <div
         ref={panelRef}
@@ -639,10 +643,160 @@ function RsvpInvite({ onOpen }: { onOpen: () => void }) {
   );
 }
 
+// ── Where is the screen? ─────────────────────────────────────────────────
+// On iPhones (Safari and Chrome both use WebKit) Windmill's frame is stretched to
+// the full height of the invitation and the outer page does the scrolling. Inside
+// a frame like that, "fixed to the bottom of the screen" means the bottom of the
+// whole invitation, so the pill never shows up. When that happens we work out
+// which slice of the invitation is on screen and place the pill (and the RSVP
+// sheet) there ourselves. Returns null when normal fixed positioning works.
+type Band = { top: number; bottom: number };
+
+function frameIsStretched() {
+  let inFrame = true;
+  try { inFrame = window.self !== window.top; } catch { inFrame = true; }
+  return inFrame && document.documentElement.scrollHeight - window.innerHeight < 4;
+}
+
+function useVisibleBand(): Band | null {
+  const [band, setBand] = useState<Band | null>(null);
+  useEffect(() => {
+    let stopped = false;
+    let cleanup: (() => void) | undefined;
+    let mode: 'none' | 'parent' | 'observer' = 'none';
+
+    const set = (top: number, bottom: number) => {
+      if (stopped) return;
+      top = Math.round(top);
+      bottom = Math.round(bottom);
+      setBand((b) => (b && b.top === top && b.bottom === bottom ? b : { top, bottom }));
+    };
+
+    // Same-origin parents: read their scroll position directly.
+    const viaParents = (): boolean => {
+      const chain: Window[] = [];
+      try {
+        let w: Window = window;
+        while (w !== w.parent) {
+          if (!w.frameElement) return false;
+          chain.push(w);
+          w = w.parent;
+        }
+        chain.push(w);
+      } catch {
+        return false;
+      }
+      const top = chain[chain.length - 1];
+      const measure = () => {
+        let offset = 0;
+        for (let i = 0; i < chain.length - 1; i++) {
+          const fe = chain[i].frameElement as HTMLElement;
+          const r = fe.getBoundingClientRect();
+          offset += r.top + (fe.clientTop || 0);
+        }
+        const vv = top.visualViewport;
+        const vTop = vv ? vv.offsetTop : 0;
+        const vH = vv ? vv.height : top.innerHeight;
+        const docTop = window.scrollY + vTop - offset;
+        set(docTop, docTop + vH);
+      };
+      const subs: Array<() => void> = [];
+      for (const w of chain) {
+        const fn = () => measure();
+        w.document.addEventListener('scroll', fn, { passive: true, capture: true });
+        w.addEventListener('resize', fn);
+        w.visualViewport?.addEventListener('resize', fn);
+        w.visualViewport?.addEventListener('scroll', fn);
+        subs.push(() => {
+          w.document.removeEventListener('scroll', fn, { capture: true } as any);
+          w.removeEventListener('resize', fn);
+          w.visualViewport?.removeEventListener('resize', fn);
+          w.visualViewport?.removeEventListener('scroll', fn);
+        });
+      }
+      measure();
+      cleanup = () => subs.forEach((f) => f());
+      return true;
+    };
+
+    // Cross-origin parents: the browser still tells us which part of the page is
+    // on screen through IntersectionObserver. The page is covered by invisible
+    // 200px strips; the strips that are partly on screen give the visible slice.
+    const viaObserver = () => {
+      if (!('IntersectionObserver' in window)) return;
+      const STRIP = 200;
+      const layer = document.createElement('div');
+      layer.setAttribute('aria-hidden', 'true');
+      layer.style.cssText = 'position:absolute;left:0;top:0;width:1px;pointer-events:none;visibility:hidden;';
+      document.body.appendChild(layer);
+      const visible = new Map<Element, Band>();
+      const thresholds = Array.from({ length: 51 }, (_, i) => i / 50);
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          const base = Number((e.target as HTMLElement).dataset.top);
+          if (e.isIntersecting && e.intersectionRect.height > 0) {
+            const top = base + (e.intersectionRect.top - e.boundingClientRect.top);
+            visible.set(e.target, { top, bottom: top + e.intersectionRect.height });
+          } else visible.delete(e.target);
+        }
+        if (!visible.size) return;
+        let top = Infinity;
+        let bottom = -Infinity;
+        visible.forEach((v) => { top = Math.min(top, v.top); bottom = Math.max(bottom, v.bottom); });
+        set(top, bottom);
+      }, { threshold: thresholds });
+      let built = 0;
+      const build = () => {
+        const h = document.documentElement.scrollHeight;
+        if (Math.abs(h - built) < 20) return;
+        built = h;
+        io.disconnect();
+        visible.clear();
+        layer.textContent = '';
+        for (let y = 0; y < h; y += STRIP) {
+          const strip = document.createElement('div');
+          strip.dataset.top = String(y);
+          strip.style.cssText = `position:absolute;left:0;width:1px;top:${y}px;height:${Math.min(STRIP, h - y)}px;`;
+          layer.appendChild(strip);
+          io.observe(strip);
+        }
+      };
+      build();
+      const ro = 'ResizeObserver' in window ? new ResizeObserver(build) : undefined;
+      ro?.observe(document.body);
+      cleanup = () => { io.disconnect(); ro?.disconnect(); layer.remove(); };
+    };
+
+    const check = () => {
+      const want = frameIsStretched();
+      if (want && mode === 'none') {
+        mode = viaParents() ? 'parent' : 'observer';
+        if (mode === 'observer') viaObserver();
+      } else if (!want && mode !== 'none') {
+        cleanup?.();
+        cleanup = undefined;
+        mode = 'none';
+        setBand(null);
+      }
+    };
+    check();
+    const t = window.setInterval(check, 1000);
+    window.addEventListener('resize', check);
+    return () => {
+      stopped = true;
+      window.clearInterval(t);
+      window.removeEventListener('resize', check);
+      cleanup?.();
+    };
+  }, []);
+  return band;
+}
+
 export default function App() {
   const [open, setOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [ctaVisible, setCtaVisible] = useState(false);
+  const band = useVisibleBand();
   const heroRef = useRef<HTMLDivElement | null>(null);
 
   // The floating RSVP pill appears at the bottom of the screen (just under the
@@ -685,7 +839,11 @@ export default function App() {
       io?.disconnect();
     };
   }, []);
-  const showFloat = pastHero && !ctaVisible && !open;
+  const scrolled = pastHero || (!!band && band.top > 8);
+  const showFloat = scrolled && !ctaVisible && !open;
+  const floatStyle: React.CSSProperties | undefined = band
+    ? { position: 'absolute', top: band.bottom - 52 - 20, bottom: 'auto' }
+    : undefined;
 
   return (
     <>
@@ -714,13 +872,14 @@ export default function App() {
       <button
         type="button"
         className={`float-rsvp ${showFloat ? 'is-shown' : ''}`}
+        style={floatStyle}
         onClick={() => glideTo(document.querySelector('.cta'), () => setOpen(true))}
         tabIndex={showFloat ? 0 : -1}
         aria-hidden={!showFloat}
       >
         RSVP
       </button>
-      <RsvpSheet open={open} onClose={() => setOpen(false)} />
+      <RsvpSheet open={open} onClose={() => setOpen(false)} band={band} />
     </>
   );
 }
