@@ -172,7 +172,7 @@ body {
 .about { margin: 72px 0 8px; }
 /* The opening view fills the screen with the leaf, details and arrow centered,
    leaving room under the arrow where the RSVP pill appears on scroll. */
-.hero { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 32px 0; box-sizing: border-box; }
+.hero { min-height: 100vh; min-height: 100svh; min-height: var(--visible-h, 100svh); display: flex; flex-direction: column; justify-content: center; padding: 32px 0; box-sizing: border-box; }
 .section-head { text-align: center; opacity: 0; transform: translateY(14px); transition: opacity 0.8s ease, transform 0.8s ease; }
 .section-head.is-in { opacity: 1; transform: none; }
 .eyebrow { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
@@ -298,7 +298,7 @@ body {
 .float-rsvp {
   position: fixed;
   left: 50%;
-  bottom: max(16px, env(safe-area-inset-bottom));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--hidden-bottom, 0px));
   z-index: 20;
   min-height: 52px;
   padding: 8px 34px 4px;
@@ -342,7 +342,7 @@ body {
 .float-rsvp:focus-visible { outline: 3px solid var(--leaf-dark); outline-offset: 3px; }
 
 /* ── RSVP sheet ────────────────────────────────────────────── */
-.sheet { position: fixed; inset: 0; z-index: 30; visibility: hidden; transition: visibility 0s linear 0.45s; }
+.sheet { position: fixed; inset: 0 0 var(--hidden-bottom, 0px) 0; z-index: 30; visibility: hidden; transition: visibility 0s linear 0.45s; }
 .sheet.is-open { visibility: visible; transition-delay: 0s; }
 .sheet-backdrop { position: absolute; inset: 0; background: rgba(33, 40, 26, 0.45); opacity: 0; transition: opacity 0.4s ease; }
 .sheet.is-open .sheet-backdrop { opacity: 1; }
@@ -354,6 +354,7 @@ body {
   max-width: 560px;
   max-height: 92vh;
   max-height: 92dvh;
+  max-height: min(92dvh, calc(var(--visible-h, 100dvh) * 0.92));
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--panel);

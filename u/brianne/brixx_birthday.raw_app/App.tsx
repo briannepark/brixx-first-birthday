@@ -794,10 +794,103 @@ function useVisibleBand(): Band | null {
   return band;
 }
 
+// ── Keep clear of the browser's toolbars ──────────────────────────────────
+// Windmill sizes its frame to the phone's full screen height, but on iPhone
+// Chrome (and Safari) the browser's own bottom toolbar covers the lower part of
+// that frame. Anything pinned to the bottom (the RSVP pill, the RSVP sheet)
+// would sit underneath the toolbar. We measure how much of the frame is actually
+// visible and expose it as CSS variables:
+//   --hidden-bottom  how much of the frame is covered at the bottom
+//   --visible-h      how tall the visible part is (used once, for the hero)
+function useToolbarClearance() {
+  useEffect(() => {
+    const root = document.documentElement;
+    const chain: Window[] = [];
+    try {
+      let w: Window = window;
+      while (w !== w.parent) {
+        if (!w.frameElement) break;
+        chain.push(w);
+        w = w.parent;
+      }
+      chain.push(w);
+    } catch {
+      /* cross-origin parent: nothing to measure, CSS defaults apply */
+    }
+    const top = chain[chain.length - 1];
+    const ownViewport = () => {
+      const vv = window.visualViewport;
+      return { top: vv ? vv.offsetTop : 0, bottom: vv ? vv.offsetTop + vv.height : window.innerHeight };
+    };
+    let lastWidth = -1;
+    const measure = () => {
+      let visTop = 0;
+      let visBottom = window.innerHeight;
+      if (chain.length > 1 && top) {
+        try {
+          let offset = 0;
+          for (let i = 0; i < chain.length - 1; i++) {
+            const fe = chain[i].frameElement as HTMLElement;
+            offset += fe.getBoundingClientRect().top + (fe.clientTop || 0);
+          }
+          const vv = top.visualViewport;
+          const tTop = vv ? vv.offsetTop : 0;
+          const tBottom = vv ? vv.offsetTop + vv.height : top.innerHeight;
+          visTop = Math.max(0, tTop - offset);
+          visBottom = Math.min(window.innerHeight, tBottom - offset);
+        } catch {
+          const o = ownViewport();
+          visTop = o.top;
+          visBottom = o.bottom;
+        }
+      } else {
+        const o = ownViewport();
+        visTop = o.top;
+        visBottom = Math.min(window.innerHeight, o.bottom);
+      }
+      const hidden = Math.max(0, Math.round(window.innerHeight - visBottom));
+      root.style.setProperty('--hidden-bottom', hidden + 'px');
+      (window as any).__brixxHidden = hidden;
+      // The hero height is set once (and again on rotation) so the page doesn't
+      // jump around when the browser's toolbars slide in and out.
+      if (window.innerWidth !== lastWidth) {
+        lastWidth = window.innerWidth;
+        const visH = Math.max(320, Math.round(visBottom - visTop));
+        root.style.setProperty('--visible-h', visH + 'px');
+      }
+    };
+    measure();
+    const subs: Array<() => void> = [];
+    const wins = chain.length ? chain : [window];
+    for (const w of wins) {
+      try {
+        const fn = () => measure();
+        w.addEventListener('resize', fn);
+        w.visualViewport?.addEventListener('resize', fn);
+        w.visualViewport?.addEventListener('scroll', fn);
+        w.document.addEventListener('scroll', fn, { passive: true, capture: true });
+        subs.push(() => {
+          w.removeEventListener('resize', fn);
+          w.visualViewport?.removeEventListener('resize', fn);
+          w.visualViewport?.removeEventListener('scroll', fn);
+          w.document.removeEventListener('scroll', fn, { capture: true } as any);
+        });
+      } catch {
+        /* ignore */
+      }
+    }
+    const t = window.setInterval(measure, 1000);
+    return () => {
+      window.clearInterval(t);
+      subs.forEach((f) => f());
+    };
+  }, []);
+}
+
 // ── Troubleshooting readout ──────────────────────────────────────────────
 // Hidden by default. Tap the date line three times quickly to show it; it sits
 // right under the down arrow and updates live while you scroll.
-const BUILD = 'pill-debug-1';
+const BUILD = 'pill-fix-2';
 
 function DebugPanel({ band, pastHero, ctaVisible }: { band: Band | null; pastHero: boolean; ctaVisible: boolean }) {
   const [, tick] = useState(0);
@@ -841,6 +934,8 @@ function DebugPanel({ band, pastHero, ctaVisible }: { band: Band | null; pastHer
     ['scrollY', String(Math.round(window.scrollY))],
     ['marker top', marker ? String(Math.round(marker.top)) : 'n/a'],
     ['mode', String((window as any).__brixxMode ?? 'n/a')],
+    ['hidden bottom', String((window as any).__brixxHidden ?? 'n/a')],
+    ['visible-h', getComputedStyle(document.documentElement).getPropertyValue('--visible-h') || 'n/a'],
     ['band', band ? `${band.top}–${band.bottom}` : 'none'],
     ['pastHero', String(pastHero)],
     ['ctaVisible', String(ctaVisible)],
@@ -862,6 +957,7 @@ export default function App() {
   const [pastHero, setPastHero] = useState(false);
   const [ctaVisible, setCtaVisible] = useState(false);
   const band = useVisibleBand();
+  useToolbarClearance();
   const [debug, setDebug] = useState(false);
   const taps = useRef<number[]>([]);
   const onFactsTap = () => {
