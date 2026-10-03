@@ -3,19 +3,30 @@ import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
-// Add, remove or reorder entries freely. `weight` shows as a small fact under
-// the headline. `photo` is optional: leave it '' for a leaf-shaped placeholder,
-// or set it to an image URL to show a photo cut into a leaf.
-type Milestone = { when: string; title: string; note?: string; weight?: string; photo?: string };
+// Add, remove or reorder entries freely.
+//   heading: the big line on the card (e.g. "Month 4")
+//   title:   optional headline under it
+//   weight:  shows as a small tag with a scale icon
+//   events:  everything that happened that month, drawn as a dotted timeline
+//   photo:   '' for a leaf-shaped placeholder, or an image URL cut into a leaf
+type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: string[]; photo?: string };
 const MILESTONES: Milestone[] = [
-  { when: 'November 20, 2025', title: '[Hello, world!]', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: '' },
-  { when: '1 month', title: '[First smile]', weight: '12 lbs 15 oz', photo: '' },
-  { when: '2 months', title: '[First laugh]', weight: '15 lbs 4 oz', photo: '' },
-  { when: '4 months', title: '[Rolled over]', weight: '18 lbs 6 oz', photo: '' },
-  { when: '6 months', title: '[First taste of poi]', weight: '21 lbs 14 oz', photo: '' },
-  { when: '8 months', title: '[Milestone]', weight: '25 lbs 12 oz', photo: '' },
-  { when: '9 months', title: '[Milestone]', weight: '15 lbs 14 oz', photo: '' },
-  { when: '10 months', title: '[First steps]', weight: '27 lbs 4 oz', photo: '' },
+  { when: 'November 20, 2025', heading: 'Hello, world!', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: '' },
+  { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: '' },
+  { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First bath', 'First time in a high chair'], photo: '' },
+  { heading: 'Month 3', events: ['Slept in his crib for the first time'], photo: '' },
+  {
+    heading: 'Month 4',
+    weight: '18 lbs 6 oz',
+    events: ['Held his head steady during tummy time', 'Watched Trolls for the first time (his favorite movie)', 'Slept through the night!'],
+    photo: '',
+  },
+  { heading: 'Month 5', events: ['First taste of poi'], photo: '' },
+  { heading: 'Month 6', weight: '21 lbs 14 oz', events: ['Road trip to Texas', 'Met his cousins (and his first time playing with other babies)'], photo: '' },
+  { heading: 'Month 7', events: ['Road trip to Chicago', 'Learned to hold his own bottle'], photo: '' },
+  { heading: 'Month 8', weight: '25 lbs 12 oz', events: ['Sat up and rolled over'], photo: '' },
+  { heading: 'Month 9', weight: '15 lbs 14 oz', events: ['Mini road trip to Ohio', 'Went to a water park'], photo: '' },
+  { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawled and started pulling himself up'], photo: '' },
 ];
 
 // ── Palette: identical to the printed card ───────────────────────────────
@@ -157,10 +168,12 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
         </svg>
       </span>
       <div className="milestone-card">
-        {m.photo !== undefined && <LeafPhoto src={m.photo || undefined} alt={m.title} id={`ms-photo-${i}`} />}
+        <div className="milestone-top">
+        {m.photo !== undefined && <LeafPhoto src={m.photo || undefined} alt={m.heading} id={`ms-photo-${i}`} />}
         <div className="milestone-text">
-          <p className="milestone-when">{m.when}</p>
-          <h3>{m.title}</h3>
+          {m.when && <p className="milestone-when">{m.when}</p>}
+          <h3>{m.heading}</h3>
+          {m.title && <p className="milestone-title">{m.title}</p>}
           {m.note && <p>{m.note}</p>}
           {m.weight && (
             <p className="milestone-fact">
@@ -174,6 +187,17 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
             </p>
           )}
         </div>
+        </div>
+        {m.events && m.events.length > 0 && (
+          <ul className="events" aria-label={`${m.heading} moments`}>
+            {m.events.map((e, j) => (
+              <li key={j} className="event" style={{ transitionDelay: `${250 + j * 160}ms` }}>
+                <span className="event-dot" aria-hidden="true" />
+                <span className="event-text">{e}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </li>
   );
