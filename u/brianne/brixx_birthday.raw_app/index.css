@@ -645,3 +645,43 @@ input[type='text']:focus, textarea:focus { outline: none; border-color: var(--le
   .vine-fill { transition: none; }
 }
 
+
+/* ── One-year card ─────────────────────────────────────────── */
+.milestone.is-big .milestone-top { flex-direction: column; text-align: center; gap: 14px; }
+.milestone.is-big .leaf-photo { width: min(100%, 260px); height: auto; aspect-ratio: 600 / 660; }
+.milestone.is-big h3 { font-family: 'Modak', 'Jost', sans-serif; font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: 0.03em; color: var(--leaf); }
+.milestone.is-big .milestone-when { white-space: normal; }
+
+/* ── Photo album easter egg (tap a month's photo) ──────────── */
+.leaf-photo-button { flex: 0 0 auto; display: block; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; border-radius: 40%; -webkit-tap-highlight-color: transparent; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.leaf-photo-button .leaf-photo { display: block; }
+.leaf-photo-button:hover { transform: rotate(-3deg) scale(1.04); }
+.leaf-photo-button:active { transform: scale(0.96); }
+.leaf-photo-button:focus-visible { outline: 3px solid var(--leaf-dark); outline-offset: 4px; }
+.milestone.is-big .leaf-photo-button { width: min(100%, 260px); }
+.milestone.is-big .leaf-photo-button .leaf-photo { width: 100%; }
+
+.album { position: fixed; inset: 0 0 var(--hidden-bottom, 0px) 0; z-index: 40; display: flex; flex-direction: column; background: #1c2416; color: var(--cream); animation: album-in 0.3s ease; }
+@keyframes album-in { from { opacity: 0; } to { opacity: 1; } }
+.album-head { display: flex; align-items: center; justify-content: space-between; padding: max(16px, env(safe-area-inset-top)) 16px 8px 20px; }
+.album-head p { margin: 0; display: flex; align-items: baseline; gap: 12px; font-size: 15px; letter-spacing: 0.06em; }
+.album-head b { font-weight: 600; font-size: 17px; }
+.album-head span { opacity: 0.7; font-size: 14px; }
+.album .close { width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(245, 240, 226, 0.12); color: var(--cream); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.album .close svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.album-status { margin: auto; font-size: 15px; opacity: 0.8; }
+.album-stage { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.album-track { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior: contain; }
+.album-track::-webkit-scrollbar { display: none; }
+.album-slide { flex: 0 0 100%; margin: 0; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; padding: 8px 16px; box-sizing: border-box; }
+.album-slide img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 16px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); }
+.album-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border: 0; border-radius: 50%; background: rgba(245, 240, 226, 0.16); color: var(--cream); cursor: pointer; display: none; align-items: center; justify-content: center; }
+.album-nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.album-nav:disabled { opacity: 0.25; cursor: default; }
+.album-nav.prev { left: 14px; }
+.album-nav.next { right: 14px; }
+@media (pointer: fine) { .album-nav { display: flex; } }
+.album-dots { display: flex; justify-content: center; gap: 7px; padding: 10px 0 max(16px, env(safe-area-inset-bottom)); }
+.album-dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(245, 240, 226, 0.3); transition: background 0.2s ease, transform 0.2s ease; }
+.album-dots span.is-on { background: var(--cream); transform: scale(1.25); }
+@media (prefers-reduced-motion: reduce) { .album { animation: none; } .leaf-photo-button { transition: none; } }

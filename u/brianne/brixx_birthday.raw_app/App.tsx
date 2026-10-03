@@ -13,11 +13,13 @@ import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4
 //   photo:   '' for a leaf-shaped placeholder, or an image URL cut into a leaf
 // A moment is plain text, or { text, trip } to draw a little road trip (car) or flight (plane) under it.
 type Moment = string | { text: string; trip: 'car' | 'plane' };
-type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: Moment[]; photo?: string };
+// photo: '' shows a "[Photo]" placeholder. big: the large one-year card at the end.
+// album: key into ALBUMS (albums.ts) for the "More photos" gallery; leave it off until there are photos.
+type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: Moment[]; photo?: string; big?: boolean; album?: string };
 const MILESTONES: Milestone[] = [
   { when: 'November 20, 2025', heading: 'Hello, world!', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Troy, Michigan', 'After 4 hours of active labor'], photo: PHOTO_BIRTH },
   { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: PHOTO_MONTH_1 },
-  { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First Christmas', 'First bath', 'First time in a high chair'], photo: PHOTO_MONTH_2 },
+  { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First bath', 'First time in a high chair', 'First Christmas'], photo: PHOTO_MONTH_2 },
   { heading: 'Month 3', events: ['Slept in his crib for the first time'], photo: PHOTO_MONTH_3 },
   {
     heading: 'Month 4',
@@ -36,16 +38,18 @@ const MILESTONES: Milestone[] = [
   {
     heading: 'Month 8',
     weight: '25 lbs 12 oz',
-    events: ['Sat up and rolled over', { text: 'Mini road trip to Ohio', trip: 'car' }, 'Went to a water park', { text: 'First flight to Las Vegas. Got his wings!', trip: 'plane' }],
+    events: [{ text: 'First flight to Las Vegas. Got his wings!', trip: 'plane' }, 'Sat up and rolled over', { text: 'Mini road trip to Ohio', trip: 'car' }, 'Went to a water park'],
     photo: PHOTO_WATER_PARK,
   },
   {
     heading: 'Month 9',
     weight: '25 lbs 14 oz',
-    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }, 'Rode the swings', 'Ate lobster in Portland, Maine!'],
+    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }, 'Ate lobster in Portland, Maine!', 'Rode the swings'],
     photo: PHOTO_MONTH_9,
   },
-  { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawled and started pulling himself up'], photo: PHOTO_MONTH_10 },
+  { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawling and pulling himself up'], photo: PHOTO_MONTH_10 },
+  { heading: 'Month 11', weight: 'TBD', events: ['Stay tuned…'], photo: '' },
+  { when: 'November 20, 2026', heading: 'One year old!', photo: '', big: true },
 ];
 
 // ── Palette: identical to the printed card ───────────────────────────────
@@ -226,12 +230,12 @@ function Trip({ kind, id }: { kind: 'car' | 'plane'; id: string }) {
   );
 }
 
-function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
+function MilestoneItem({ m, i, onAlbum }: { m: Milestone; i: number; onAlbum: (m: Milestone) => void }) {
   const [ref, inView] = useReveal<HTMLLIElement>();
   return (
     <li
       ref={ref}
-      className={`milestone ${inView ? 'is-in' : ''}`}
+      className={`milestone ${inView ? 'is-in' : ''} ${m.big ? 'is-big' : ''}`}
       // Each month's leaf on the vine is a little bigger than the last, like the kalo growing.
       style={{ transitionDelay: `${Math.min(i, 2) * 60}ms`, '--grow': 0.75 + (0.85 * i) / Math.max(1, MILESTONES.length - 1) } as React.CSSProperties}
     >
@@ -242,7 +246,15 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
       </span>
       <div className="milestone-card">
         <div className="milestone-top">
-        {m.photo !== undefined && <LeafPhoto src={m.photo || undefined} alt={m.heading} id={`ms-photo-${i}`} />}
+        {m.photo !== undefined &&
+          (m.album ? (
+            // Easter egg: tapping the month's photo opens more photos from that month.
+            <button type="button" className="leaf-photo-button" onClick={() => onAlbum(m)} aria-label={`See more photos from ${m.heading}`}>
+              <LeafPhoto src={m.photo || undefined} alt={m.heading} id={`ms-photo-${i}`} />
+            </button>
+          ) : (
+            <LeafPhoto src={m.photo || undefined} alt={m.heading} id={`ms-photo-${i}`} />
+          ))}
         <div className="milestone-text">
           {m.when && <p className="milestone-when">{m.when}</p>}
           <h3>{m.heading}</h3>
@@ -280,6 +292,108 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
         )}
       </div>
     </li>
+  );
+}
+
+// ── Photo album ("More photos" on a milestone) ───────────────────────────
+// Hidden like an easter egg: there's no button, tapping a month's leaf photo
+// opens it (only for months that have an album). Extra photos live in albums.ts and are only loaded when someone opens an
+// album, so they don't slow down the page. They open full screen, one at a
+// time: swipe (or use the arrows / arrow keys) to move between them.
+function AlbumViewer({ milestone, onClose }: { milestone: Milestone | null; onClose: () => void }) {
+  const [photos, setPhotos] = useState<string[] | null>(null);
+  const [index, setIndex] = useState(0);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const open = !!milestone;
+
+  useEffect(() => {
+    if (!milestone?.album) return;
+    let alive = true;
+    setPhotos(null);
+    setIndex(0);
+    import('./albums')
+      .then((mod) => alive && setPhotos(mod.ALBUMS[milestone.album!] ?? []))
+      .catch(() => alive && setPhotos([]));
+    return () => {
+      alive = false;
+    };
+  }, [milestone]);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') go(1);
+      if (e.key === 'ArrowLeft') go(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    const t = window.setTimeout(() => document.querySelector<HTMLElement>('.album .close')?.focus(), 50);
+    return () => {
+      window.clearTimeout(t);
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+      prev?.focus();
+    };
+  }, [open]);
+
+  const go = (step: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const n = track.children.length;
+    const next = Math.max(0, Math.min(n - 1, Math.round(track.scrollLeft / track.clientWidth) + step));
+    track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+  };
+  const onScroll = () => {
+    const track = trackRef.current;
+    if (track) setIndex(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)));
+  };
+
+  if (!milestone) return null;
+  const count = photos?.length ?? 0;
+  return (
+    <div className="album" role="dialog" aria-modal="true" aria-label={`${milestone.heading} photos`}>
+      <div className="album-head">
+        <p>
+          <b>{milestone.heading}</b>
+          {count > 1 && <span>{index + 1} of {count}</span>}
+        </p>
+        <button type="button" className="close" onClick={onClose} aria-label="Close photos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+      {photos === null ? (
+        <p className="album-status">Loading photos…</p>
+      ) : count === 0 ? (
+        <p className="album-status">No photos here yet.</p>
+      ) : (
+        <div className="album-stage">
+          <div className="album-track" ref={trackRef} onScroll={onScroll}>
+            {photos.map((src, k) => (
+              <figure key={k} className="album-slide">
+                <img src={src} alt={`${milestone.heading}, photo ${k + 1} of ${count}`} />
+              </figure>
+            ))}
+          </div>
+          {count > 1 && (
+            <>
+              <button type="button" className="album-nav prev" onClick={() => go(-1)} disabled={index === 0} aria-label="Previous photo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+              </button>
+              <button type="button" className="album-nav next" onClick={() => go(1)} disabled={index >= count - 1} aria-label="Next photo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+              </button>
+              <div className="album-dots" aria-hidden="true">
+                {photos.map((_, k) => (
+                  <span key={k} className={k === index ? 'is-on' : ''} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -322,6 +436,7 @@ function BackgroundLeaves({ visible }: { visible: boolean }) {
 }
 
 function Milestones() {
+  const [album, setAlbum] = useState<Milestone | null>(null);
   const [ref, inView] = useReveal<HTMLDivElement>();
   const sectionRef = useRef<HTMLElement | null>(null);
   const listRef = useRef<HTMLOListElement | null>(null);
@@ -373,9 +488,10 @@ function Milestones() {
       <ol ref={listRef} className="timeline">
         <li className="vine-fill" ref={fillRef} aria-hidden="true" />
         {MILESTONES.map((m, i) => (
-          <MilestoneItem key={i} m={m} i={i} />
+          <MilestoneItem key={i} m={m} i={i} onAlbum={setAlbum} />
         ))}
       </ol>
+      <AlbumViewer milestone={album} onClose={() => setAlbum(null)} />
     </section>
   );
 }
