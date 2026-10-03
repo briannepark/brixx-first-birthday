@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { backend } from './wmill';
+import { ALBUMS, fallbackUrl, type AlbumItem } from './albums';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
 import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_5, PHOTO_DAYCARE, PHOTO_CHICAGO, PHOTO_WATER_PARK, PHOTO_MONTH_9, PHOTO_MONTH_10 } from './photos';
 
@@ -46,6 +47,7 @@ const MILESTONES: Milestone[] = [
     weight: '25 lbs 14 oz',
     events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }, 'Ate lobster in Portland, Maine!', 'Rode the swings'],
     photo: PHOTO_MONTH_9,
+    album: 'month-9',
   },
   { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawling and pulling himself up'], photo: PHOTO_MONTH_10 },
   { heading: 'Month 11', weight: 'TBD', events: ['Stay tuned…'], photo: '' },
@@ -301,23 +303,22 @@ function MilestoneItem({ m, i, onAlbum }: { m: Milestone; i: number; onAlbum: (m
 // album, so they don't slow down the page. They open full screen, one at a
 // time: swipe (or use the arrows / arrow keys) to move between them.
 function AlbumViewer({ milestone, onClose }: { milestone: Milestone | null; onClose: () => void }) {
-  const [photos, setPhotos] = useState<string[] | null>(null);
   const [index, setIndex] = useState(0);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const open = !!milestone;
+  const album = milestone?.album ? ALBUMS[milestone.album] : undefined;
+  const cover = album?.cover || milestone?.photo;
+  const items: AlbumItem[] = [...(cover ? [{ kind: 'photo' as const, src: cover }] : []), ...(album?.items ?? [])];
+  const count = items.length;
 
-  useEffect(() => {
-    if (!milestone?.album) return;
-    let alive = true;
-    setPhotos(null);
-    setIndex(0);
-    import('./albums')
-      .then((mod) => alive && setPhotos(mod.ALBUMS[milestone.album!] ?? []))
-      .catch(() => alive && setPhotos([]));
-    return () => {
-      alive = false;
-    };
-  }, [milestone]);
+  useEffect(() => setIndex(0), [milestone]);
+
+  const go = (step: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const next = Math.max(0, Math.min(count - 1, Math.round(track.scrollLeft / track.clientWidth) + step));
+    track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -338,22 +339,40 @@ function AlbumViewer({ milestone, onClose }: { milestone: Milestone | null; onCl
     };
   }, [open]);
 
-  const go = (step: number) => {
+  // Videos play (muted, looping) only while they're the photo on screen.
+  useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
-    const n = track.children.length;
-    const next = Math.max(0, Math.min(n - 1, Math.round(track.scrollLeft / track.clientWidth) + step));
-    track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
-  };
+    track.querySelectorAll('video').forEach((v) => {
+      const active = Number(v.dataset.index) === index;
+      if (active) v.play().catch(() => undefined);
+      else v.pause();
+    });
+  }, [index, open]);
+
   const onScroll = () => {
     const track = trackRef.current;
     if (track) setIndex(Math.round(track.scrollLeft / Math.max(1, track.clientWidth)));
   };
+  // If the CDN can't be reached, try GitHub's copy of the same file once.
+  const retry = (e: React.SyntheticEvent<HTMLImageElement | HTMLVideoElement>) => {
+    const el = e.currentTarget;
+    if (el.dataset.retried) return;
+    el.dataset.retried = '1';
+    const alt = fallbackUrl(el.getAttribute('src') || '');
+    if (alt && alt !== el.getAttribute('src')) {
+      el.setAttribute('src', alt);
+      if (el instanceof HTMLVideoElement) {
+        if (el.poster) el.poster = fallbackUrl(el.poster);
+        el.load();
+      }
+    }
+  };
 
   if (!milestone) return null;
-  const count = photos?.length ?? 0;
   return (
     <div className="album" role="dialog" aria-modal="true" aria-label={`${milestone.heading} photos`}>
+      <div className="album-backdrop" onClick={onClose} />
       <div className="album-head">
         <p>
           <b>{milestone.heading}</b>
@@ -363,36 +382,45 @@ function AlbumViewer({ milestone, onClose }: { milestone: Milestone | null; onCl
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
       </div>
-      {photos === null ? (
-        <p className="album-status">Loading photos…</p>
-      ) : count === 0 ? (
-        <p className="album-status">No photos here yet.</p>
-      ) : (
-        <div className="album-stage">
-          <div className="album-track" ref={trackRef} onScroll={onScroll}>
-            {photos.map((src, k) => (
-              <figure key={k} className="album-slide">
-                <img src={src} alt={`${milestone.heading}, photo ${k + 1} of ${count}`} />
-              </figure>
-            ))}
-          </div>
-          {count > 1 && (
-            <>
-              <button type="button" className="album-nav prev" onClick={() => go(-1)} disabled={index === 0} aria-label="Previous photo">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
-              </button>
-              <button type="button" className="album-nav next" onClick={() => go(1)} disabled={index >= count - 1} aria-label="Next photo">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-              </button>
-              <div className="album-dots" aria-hidden="true">
-                {photos.map((_, k) => (
-                  <span key={k} className={k === index ? 'is-on' : ''} />
-                ))}
-              </div>
-            </>
-          )}
+      <div className="album-stage">
+        <div className="album-track" ref={trackRef} onScroll={onScroll}>
+          {items.map((item, k) => (
+            <figure key={k} className="album-slide" onClick={(e) => e.target === e.currentTarget && onClose()}>
+              {item.kind === 'photo' ? (
+                <img src={item.src} alt={`${milestone.heading}, ${k + 1} of ${count}`} onError={retry} />
+              ) : (
+                <video
+                  data-index={k}
+                  src={item.src}
+                  poster={item.poster}
+                  muted
+                  loop
+                  playsInline
+                  controls
+                  preload="metadata"
+                  aria-label={`${milestone.heading}, video ${k + 1} of ${count}`}
+                  onError={retry}
+                />
+              )}
+            </figure>
+          ))}
         </div>
-      )}
+        {count > 1 && (
+          <>
+            <button type="button" className="album-nav prev" onClick={() => go(-1)} disabled={index === 0} aria-label="Previous">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+            </button>
+            <button type="button" className="album-nav next" onClick={() => go(1)} disabled={index >= count - 1} aria-label="Next">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+            </button>
+            <div className="album-dots" aria-hidden="true">
+              {items.map((_, k) => (
+                <span key={k} className={k === index ? 'is-on' : ''} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

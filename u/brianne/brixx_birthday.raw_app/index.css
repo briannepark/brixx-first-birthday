@@ -661,27 +661,32 @@ input[type='text']:focus, textarea:focus { outline: none; border-color: var(--le
 .milestone.is-big .leaf-photo-button { width: min(100%, 260px); }
 .milestone.is-big .leaf-photo-button .leaf-photo { width: 100%; }
 
-.album { position: fixed; inset: 0 0 var(--hidden-bottom, 0px) 0; z-index: 40; display: flex; flex-direction: column; background: #1c2416; color: var(--cream); animation: album-in 0.3s ease; }
+.album { position: fixed; inset: 0 0 var(--hidden-bottom, 0px) 0; z-index: 40; display: flex; flex-direction: column; color: var(--cream); }
+.album-backdrop, .album-head, .album-stage { animation: album-in 0.3s ease; }
+/* The page stays visible behind the album, out of focus and a little darker. */
+.album-backdrop { position: absolute; inset: 0; z-index: -1; background: rgba(24, 31, 19, 0.62); -webkit-backdrop-filter: blur(14px) saturate(0.9); backdrop-filter: blur(14px) saturate(0.9); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .album-backdrop { background: rgba(24, 31, 19, 0.9); } }
 @keyframes album-in { from { opacity: 0; } to { opacity: 1; } }
-.album-head { display: flex; align-items: center; justify-content: space-between; padding: max(16px, env(safe-area-inset-top)) 16px 8px 20px; }
+.album-head { box-sizing: border-box; width: 100%; position: relative; z-index: 1; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);  display: flex; align-items: center; justify-content: space-between; padding: max(16px, env(safe-area-inset-top)) 16px 8px 20px; }
 .album-head p { margin: 0; display: flex; align-items: baseline; gap: 12px; font-size: 15px; letter-spacing: 0.06em; }
 .album-head b { font-weight: 600; font-size: 17px; }
 .album-head span { opacity: 0.7; font-size: 14px; }
-.album .close { width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(245, 240, 226, 0.12); color: var(--cream); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.album .close { position: static; flex: 0 0 auto; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(24, 31, 19, 0.45); color: var(--cream); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .album .close svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .album-status { margin: auto; font-size: 15px; opacity: 0.8; }
 .album-stage { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .album-track { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior: contain; }
 .album-track::-webkit-scrollbar { display: none; }
 .album-slide { flex: 0 0 100%; margin: 0; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; padding: 8px 16px; box-sizing: border-box; }
+.album-slide video { max-width: 100%; max-height: 100%; border-radius: 16px; background: #000; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); }
 .album-slide img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 16px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); }
-.album-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border: 0; border-radius: 50%; background: rgba(245, 240, 226, 0.16); color: var(--cream); cursor: pointer; display: none; align-items: center; justify-content: center; }
+.album-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border: 0; border-radius: 50%; background: rgba(24, 31, 19, 0.45); color: var(--cream); cursor: pointer; display: none; align-items: center; justify-content: center; }
 .album-nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .album-nav:disabled { opacity: 0.25; cursor: default; }
 .album-nav.prev { left: 14px; }
 .album-nav.next { right: 14px; }
 @media (pointer: fine) { .album-nav { display: flex; } }
 .album-dots { display: flex; justify-content: center; gap: 7px; padding: 10px 0 max(16px, env(safe-area-inset-bottom)); }
-.album-dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(245, 240, 226, 0.3); transition: background 0.2s ease, transform 0.2s ease; }
+.album-dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(245, 240, 226, 0.4); transition: background 0.2s ease, transform 0.2s ease; }
 .album-dots span.is-on { background: var(--cream); transform: scale(1.25); }
-@media (prefers-reduced-motion: reduce) { .album { animation: none; } .leaf-photo-button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .album-backdrop, .album-head, .album-stage { animation: none; } .leaf-photo-button { transition: none; } }

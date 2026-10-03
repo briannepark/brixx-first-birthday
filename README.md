@@ -72,6 +72,13 @@ Every RSVP writes an entry to **Resources → `u/brianne/brixx_rsvp_log`** in Wi
 the exact step that failed with a plain-language hint. The same step-by-step
 output appears in the logs of each `submit_rsvp` run under **Runs**.
 
+## Photo albums (hidden)
+
+Tapping a month's leaf photo opens that month's album, if it has one. Album files
+(photos and short videos) live in `album/` and are listed in
+`u/brianne/brixx_birthday.raw_app/albums.ts`; they're served from jsDelivr's GitHub
+CDN pinned to the commit that added them, so they load only when an album is opened.
+
 ## Editing
 
 - Wording on the leaf or form: `App.tsx`
