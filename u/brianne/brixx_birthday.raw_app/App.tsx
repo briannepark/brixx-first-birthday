@@ -179,6 +179,9 @@ function LeafPhoto({ src, alt, id }: { src?: string; alt: string; id: string }) 
   );
 }
 
+// Road trip / flight route animations under moments. Turned off for now; set to true to bring them back.
+const SHOW_TRIPS = false;
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -268,7 +271,7 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
                   <span className="event-dot" aria-hidden="true" />
                   <span className="event-text">
                     {text}
-                    {trip && inView && <Trip kind={trip} id={`trip-${i}-${j}`} />}
+                    {SHOW_TRIPS && trip && inView && <Trip kind={trip} id={`trip-${i}-${j}`} />}
                   </span>
                 </li>
               );
