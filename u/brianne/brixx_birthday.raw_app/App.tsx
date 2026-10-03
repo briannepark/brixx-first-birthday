@@ -24,7 +24,7 @@ const MILESTONES: Milestone[] = [
   },
   { heading: 'Month 5', events: ['First taste of poi', 'First laugh', 'First Easter'], photo: PHOTO_MONTH_5 },
   { heading: 'Month 6', weight: '21 lbs 14 oz', events: ['Road trip to Texas and Louisiana', 'Met his cousins (and his first time playing with other babies)'], photo: '' },
-  { heading: 'Month 7', events: ['Road trip to Chicago', 'Learned to hold his own bottle'], photo: PHOTO_MONTH_7 },
+  { heading: 'Month 7', events: ['Road trip to Chicago', 'Learned to hold his own bottle', 'First day of daycare!'], photo: PHOTO_MONTH_7 },
   { heading: 'Month 8', weight: '25 lbs 12 oz', events: ['Sat up and rolled over'], photo: '' },
   { heading: 'Month 9', weight: '25 lbs', events: ['Mini road trip to Ohio', 'Went to a water park'], photo: '' },
   { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawled and started pulling himself up'], photo: '' },
