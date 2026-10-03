@@ -15,8 +15,9 @@ import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4
 // A moment is plain text, or { text, trip } to draw a little road trip (car) or flight (plane) under it.
 type Moment = string | { text: string; trip: 'car' | 'plane' };
 // photo: '' shows a "[Photo]" placeholder. big: the large one-year card at the end.
+// hidden: true keeps a milestone off the page for now.
 // album: key into ALBUMS (albums.ts) for the "More photos" gallery; leave it off until there are photos.
-type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: Moment[]; photo?: string; big?: boolean; album?: string };
+type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: Moment[]; photo?: string; big?: boolean; album?: string; hidden?: boolean };
 const MILESTONES: Milestone[] = [
   { when: 'November 20, 2025', heading: 'Hello, world!', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Troy, Michigan', 'After 4 hours of active labor'], photo: PHOTO_BIRTH },
   { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: PHOTO_MONTH_1 },
@@ -51,9 +52,9 @@ const MILESTONES: Milestone[] = [
     album: 'month-9',
   },
   { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawling and pulling himself up'], photo: PHOTO_MONTH_10, album: 'month-10' },
-  { heading: 'Month 11', weight: 'TBD', events: ['Stay tuned…'], photo: '' },
-  { when: 'November 20, 2026', heading: 'One year old!', photo: '', big: true },
-];
+  { heading: 'Month 11', weight: 'TBD', events: ['Stay tuned…'], photo: '', hidden: true },
+  { when: 'November 20, 2026', heading: 'One year old!', photo: '', big: true, hidden: true },
+].filter((m) => !m.hidden);
 
 // ── Palette: identical to the printed card ───────────────────────────────
 const LEAF_GREEN = '#5B7642';
