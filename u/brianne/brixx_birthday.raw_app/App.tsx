@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
-import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_7 } from './photos';
+import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_5, PHOTO_MONTH_7 } from './photos';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
 // Add, remove or reorder entries freely.
@@ -22,7 +22,7 @@ const MILESTONES: Milestone[] = [
     events: ['Held his head steady during tummy time', 'Watched Trolls for the first time (his favorite movie)', 'Slept through the night!', 'First snow angel', 'First Valentine’s Day'],
     photo: PHOTO_MONTH_4,
   },
-  { heading: 'Month 5', events: ['First taste of poi', 'First laugh'], photo: '' },
+  { heading: 'Month 5', events: ['First taste of poi', 'First laugh', 'First Easter'], photo: PHOTO_MONTH_5 },
   { heading: 'Month 6', weight: '21 lbs 14 oz', events: ['Road trip to Texas and Louisiana', 'Met his cousins (and his first time playing with other babies)'], photo: '' },
   { heading: 'Month 7', events: ['Road trip to Chicago', 'Learned to hold his own bottle'], photo: PHOTO_MONTH_7 },
   { heading: 'Month 8', weight: '25 lbs 12 oz', events: ['Sat up and rolled over'], photo: '' },
