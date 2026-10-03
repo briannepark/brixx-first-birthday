@@ -497,18 +497,23 @@ export default function App() {
   const [ctaVisible, setCtaVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
 
-  // The floating RSVP pill shows once the leaf scrolls away, and hides again
-  // when the big RSVP section is on screen so the two never overlap.
+  // The floating RSVP pill shows as soon as the down arrow has scrolled off the
+  // top of the screen, and hides again while the big RSVP section is on screen
+  // so the two never overlap.
   useEffect(() => {
-    const hero = heroRef.current;
+    const cue = document.querySelector('.scroll-cue');
     const cta = document.querySelector('.cta');
-    if (!hero || !cta || !('IntersectionObserver' in window)) return;
+    if (!cue || !cta || !('IntersectionObserver' in window)) return;
     const io = new IntersectionObserver(
       (entries) =>
-        entries.forEach((e) => (e.target === hero ? setPastHero(!e.isIntersecting) : setCtaVisible(e.isIntersecting))),
-      { threshold: 0.15 },
+        entries.forEach((e) =>
+          e.target === cue
+            ? setPastHero(!e.isIntersecting && e.boundingClientRect.top < 0)
+            : setCtaVisible(e.isIntersecting),
+        ),
+      { threshold: 0 },
     );
-    io.observe(hero);
+    io.observe(cue);
     io.observe(cta);
     return () => io.disconnect();
   }, []);
@@ -540,23 +545,11 @@ export default function App() {
       <button
         type="button"
         className={`float-rsvp ${showFloat ? 'is-shown' : ''}`}
-        onClick={() =>
-          glideTo(document.querySelector('.cta'), () => {
-            const btn = document.getElementById('cta-rsvp');
-            btn?.focus({ preventScroll: true });
-            btn?.classList.remove('is-nudged');
-            void btn?.offsetWidth; // restart the nudge animation
-            btn?.classList.add('is-nudged');
-          })
-        }
+        onClick={() => glideTo(document.querySelector('.cta'), () => setOpen(true))}
         tabIndex={showFloat ? 0 : -1}
         aria-hidden={!showFloat}
-        aria-label="Go to RSVP"
       >
         RSVP
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 9l6 6 6-6" />
-        </svg>
       </button>
       <RsvpSheet open={open} onClose={() => setOpen(false)} />
     </>
