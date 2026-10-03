@@ -19,15 +19,24 @@ export const fallbackUrl = (url: string) =>
   url.replace(/^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+\/[^@]+)@([^/]+)\//, 'https://raw.githubusercontent.com/$1/$2/');
 
 const M9 = 'b1212dbb11aeae4ba14d05f9f0525aa12c26ebfa';
+const M8 = '6aaf49ccfaed2f7900e8de5ba2fb641d2dbbe126';
 const M10 = 'be7db6bfc5b582412c4cfc5c4af03aba1f0e300b';
 
 export const ALBUMS: Record<string, Album> = {
+  'month-8': {
+    cover: media(M8, 'month-8-lounging.jpg'),
+    items: [
+      { kind: 'video', src: media(M8, 'month-8-sitting.mp4'), poster: media(M8, 'month-8-sitting-poster.jpg') },
+      { kind: 'video', src: media(M8, 'month-8-car-seat.mp4'), poster: media(M8, 'month-8-car-seat-poster.jpg') },
+    ],
+  },
   'month-9': {
     cover: media(M9, 'month-9-sitting.jpg'),
     items: [
       { kind: 'photo', src: media(M9, 'month-9-swing.jpg') },
       { kind: 'video', src: media(M9, 'month-9-swing.mp4'), poster: media(M9, 'month-9-swing-poster.jpg') },
       { kind: 'video', src: media(M10, 'month-9-rainbow.mp4'), poster: media(M10, 'month-9-rainbow-poster.jpg') },
+      { kind: 'video', src: media(M8, 'month-9-aquarium.mp4'), poster: media(M8, 'month-9-aquarium-poster.jpg') },
     ],
   },
   'month-10': {

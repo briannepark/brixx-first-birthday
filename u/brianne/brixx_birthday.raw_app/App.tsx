@@ -41,11 +41,12 @@ const MILESTONES: Milestone[] = [
     weight: '25 lbs 12 oz',
     events: [{ text: 'First flight to Las Vegas. Got his wings!', trip: 'plane' }, 'Sat up and rolled over', { text: 'Mini road trip to Ohio', trip: 'car' }, 'Went to a water park'],
     photo: PHOTO_WATER_PARK,
+    album: 'month-8',
   },
   {
     heading: 'Month 9',
     weight: '25 lbs 14 oz',
-    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }, 'Ate lobster in Portland, Maine!', 'Rode the swings'],
+    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }, 'Ate lobster in Portland, Maine!', 'Aquarium visit', 'Rode the swings'],
     photo: PHOTO_MONTH_9,
     album: 'month-9',
   },
