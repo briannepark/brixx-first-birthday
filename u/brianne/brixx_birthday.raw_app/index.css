@@ -23,7 +23,7 @@ body {
 .page {
   max-width: 560px;
   margin: 0 auto;
-  padding: 28px 16px 96px;
+  padding: 64px 16px 96px;
 }
 
 /* ── Leaf card ─────────────────────────────────────────────── */
