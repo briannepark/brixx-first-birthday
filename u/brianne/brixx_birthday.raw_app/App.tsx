@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
-import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_5, PHOTO_DAYCARE, PHOTO_CHICAGO, PHOTO_WATER_PARK, PHOTO_MONTH_10 } from './photos';
+import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4, PHOTO_MONTH_5, PHOTO_DAYCARE, PHOTO_CHICAGO, PHOTO_WATER_PARK, PHOTO_MONTH_9, PHOTO_MONTH_10 } from './photos';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
 // Add, remove or reorder entries freely.
@@ -42,8 +42,8 @@ const MILESTONES: Milestone[] = [
   {
     heading: 'Month 9',
     weight: '25 lbs 14 oz',
-    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }],
-    photo: '',
+    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }, 'Rode the swings', 'Ate lobster in Portland, Maine!'],
+    photo: PHOTO_MONTH_9,
   },
   { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawled and started pulling himself up'], photo: PHOTO_MONTH_10 },
 ];
