@@ -643,3 +643,8 @@ input[type='text']:focus, textarea:focus { outline: none; border-color: var(--le
   .milestone-node svg { transform: none; fill: var(--leaf); }
   .vine-fill { transition: none; }
 }
+
+/* Troubleshooting readout (tap the date three times) */
+.debug-panel { margin: 12px auto 0; max-width: 340px; padding: 10px 12px; border-radius: 12px; background: #fffdf8; border: 1px dashed var(--leaf); font: 12px/1.5 ui-monospace, Menlo, monospace; color: #2b3522; text-align: left; }
+.debug-panel b { font-weight: 600; color: var(--leaf); }
+.debug-ua { margin-top: 6px; font-size: 10px; color: #5d6552; word-break: break-all; }
