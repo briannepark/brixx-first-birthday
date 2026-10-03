@@ -12,7 +12,7 @@ import { PHOTO_BIRTH } from './photos';
 //   photo:   '' for a leaf-shaped placeholder, or an image URL cut into a leaf
 type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: string[]; photo?: string };
 const MILESTONES: Milestone[] = [
-  { when: 'November 20, 2025', heading: '[Hello, world!]', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: PHOTO_BIRTH },
+  { when: 'November 20, 2025', heading: '[Hello, world!]', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Michigan'], photo: PHOTO_BIRTH },
   { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: '' },
   { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First Christmas', 'First bath', 'First time in a high chair'], photo: '' },
   { heading: 'Month 3', events: ['Slept in his crib for the first time'], photo: '' },
