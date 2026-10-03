@@ -9,8 +9,11 @@ import { PHOTO_BIRTH, PHOTO_MONTH_1, PHOTO_MONTH_2, PHOTO_MONTH_3, PHOTO_MONTH_4
 //   title:   optional headline under it
 //   weight:  shows as a small tag with a scale icon
 //   events:  everything that happened that month, drawn as a dotted timeline
+//            (use { text, trip: 'car' | 'plane' } to animate a road trip or flight)
 //   photo:   '' for a leaf-shaped placeholder, or an image URL cut into a leaf
-type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: string[]; photo?: string };
+// A moment is plain text, or { text, trip } to draw a little road trip (car) or flight (plane) under it.
+type Moment = string | { text: string; trip: 'car' | 'plane' };
+type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: Moment[]; photo?: string };
 const MILESTONES: Milestone[] = [
   { when: 'November 20, 2025', heading: '[Hello, world!]', weight: '10 lbs 2 oz', events: ['Brixx Hāloa Auguillard was born in Michigan'], photo: PHOTO_BIRTH },
   { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: PHOTO_MONTH_1 },
@@ -26,20 +29,20 @@ const MILESTONES: Milestone[] = [
   {
     heading: 'Month 6',
     weight: '21 lbs 14 oz',
-    events: ['Road trip to Texas and Louisiana', 'Met his cousins (and his first time playing with other babies)', 'First day of daycare!'],
+    events: [{ text: 'Road trip to Texas and Louisiana', trip: 'car' }, 'Met his cousins (and his first time playing with other babies)', 'First day of daycare!'],
     photo: PHOTO_DAYCARE,
   },
-  { heading: 'Month 7', events: ['Learned to hold his own bottle', 'Road trip to Chicago'], photo: PHOTO_CHICAGO },
+  { heading: 'Month 7', events: ['Learned to hold his own bottle', { text: 'Road trip to Chicago', trip: 'car' }], photo: PHOTO_CHICAGO },
   {
     heading: 'Month 8',
     weight: '25 lbs 12 oz',
-    events: ['Sat up and rolled over', 'Mini road trip to Ohio', 'Went to a water park', 'First flight to Las Vegas. Got his wings!'],
+    events: ['Sat up and rolled over', { text: 'Mini road trip to Ohio', trip: 'car' }, 'Went to a water park', { text: 'First flight to Las Vegas. Got his wings!', trip: 'plane' }],
     photo: PHOTO_WATER_PARK,
   },
   {
     heading: 'Month 9',
     weight: '25 lbs 14 oz',
-    events: ['Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire'],
+    events: [{ text: 'Road trip to Boston, with stops in Ontario (Canada), New York, Portland (Maine) and New Hampshire', trip: 'car' }],
     photo: '',
   },
   { heading: 'Month 10', weight: '27 lbs 4 oz', events: ['Crawled and started pulling himself up'], photo: '' },
@@ -176,6 +179,50 @@ function LeafPhoto({ src, alt, id }: { src?: string; alt: string; id: string }) 
   );
 }
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// A dotted route that draws itself while a little car (or plane) travels along it.
+// Rendered only once its card scrolls into view, so the animation starts then.
+function Trip({ kind, id }: { kind: 'car' | 'plane'; id: string }) {
+  const still = prefersReducedMotion();
+  const d =
+    kind === 'plane'
+      ? 'M10,38 C60,38 80,8 130,8 S206,22 226,22'
+      : 'M10,24 C40,10 62,34 92,22 S146,8 172,24 S206,20 226,20';
+  const dur = kind === 'plane' ? '2.6s' : '3s';
+  return (
+    <svg className={`trip trip-${kind}`} viewBox="0 0 240 46" aria-hidden="true">
+      <defs>
+        <mask id={`${id}-mask`} maskUnits="userSpaceOnUse" x="0" y="0" width="240" height="46">
+          <path d={d} pathLength={1} fill="none" stroke="#fff" strokeWidth={10} strokeDasharray="1 1" strokeDashoffset={still ? 0 : 1}>
+            {!still && <animate attributeName="stroke-dashoffset" from="1" to="0" dur={dur} begin="0.3s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.45 0 0.3 1" />}
+          </path>
+        </mask>
+      </defs>
+      <path d={d} className="trip-route" mask={`url(#${id}-mask)`} />
+      <circle cx="10" cy={kind === 'plane' ? 38 : 24} r="3.5" className="trip-start" />
+      <circle cx="226" cy={kind === 'plane' ? 22 : 20} r="4.5" className="trip-end" />
+      <g className="trip-vehicle" transform={still ? `translate(226 ${kind === 'plane' ? 22 : 20})` : undefined}>
+        {!still && <animateMotion dur={dur} begin="0.3s" fill="freeze" path={d} rotate="auto" calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines="0.45 0 0.3 1" />}
+        {kind === 'car' ? (
+          <g transform="scale(1.3) translate(-12 -13)">
+            <path d="M3 13 L5 8 Q6 6 8 6 L14 6 Q16 6 17 8 L19 11 L21 12 Q22 12.5 22 14 L22 16 L2 16 L2 14 Q2 13 3 13 Z" className="veh-body" />
+            <path d="M7 8.2 L9 8.2 L9 11 L5.6 11 Z M10.6 8.2 L14 8.2 L16.2 11 L10.6 11 Z" className="veh-window" />
+            <circle cx="6.5" cy="16.5" r="2.6" className="veh-wheel" />
+            <circle cx="17.5" cy="16.5" r="2.6" className="veh-wheel" />
+          </g>
+        ) : (
+          <g transform="scale(1.3) translate(-12 -10)">
+            <path d="M2 10 Q2 8.6 4 8.6 L19 8.6 Q23 8.6 23.5 10 Q23 11.4 19 11.4 L4 11.4 Q2 11.4 2 10 Z" className="veh-body" />
+            <path d="M10 8.8 L14 1.5 L16.5 1.5 L14.5 8.8 Z M10 11.2 L14 18.5 L16.5 18.5 L14.5 11.2 Z M3 8.8 L2.5 5 L4.5 5 L6.5 8.8 Z" className="veh-body" />
+          </g>
+        )}
+      </g>
+    </svg>
+  );
+}
+
 function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
   const [ref, inView] = useReveal<HTMLLIElement>();
   return (
@@ -208,12 +255,19 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
         </div>
         {m.events && m.events.length > 0 && (
           <ul className="events" aria-label={`${m.heading} moments`}>
-            {m.events.map((e, j) => (
-              <li key={j} className="event" style={{ transitionDelay: `${250 + j * 160}ms` }}>
-                <span className="event-dot" aria-hidden="true" />
-                <span className="event-text">{e}</span>
-              </li>
-            ))}
+            {m.events.map((e, j) => {
+              const text = typeof e === 'string' ? e : e.text;
+              const trip = typeof e === 'string' ? null : e.trip;
+              return (
+                <li key={j} className="event" style={{ transitionDelay: `${250 + j * 160}ms` }}>
+                  <span className="event-dot" aria-hidden="true" />
+                  <span className="event-text">
+                    {text}
+                    {trip && inView && <Trip kind={trip} id={`trip-${i}-${j}`} />}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -221,16 +275,95 @@ function MilestoneItem({ m, i }: { m: Milestone; i: number }) {
   );
 }
 
+// Faint kalo leaves drifting behind the milestones (computer screens only, see CSS).
+const BG_LEAVES = [
+  { x: 6, y: 8, s: 120, r: -24, speed: 0.18, sway: 11 },
+  { x: 84, y: 18, s: 90, r: 30, speed: 0.32, sway: 14 },
+  { x: 12, y: 46, s: 70, r: 12, speed: 0.42, sway: 9 },
+  { x: 88, y: 58, s: 140, r: -40, speed: 0.14, sway: 16 },
+  { x: 4, y: 82, s: 100, r: 48, speed: 0.26, sway: 12 },
+  { x: 80, y: 92, s: 80, r: -8, speed: 0.38, sway: 10 },
+];
+
+function BackgroundLeaves({ visible }: { visible: boolean }) {
+  return (
+    <div className={`bg-leaves ${visible ? 'is-visible' : ''}`} aria-hidden="true">
+      {BG_LEAVES.map((l, i) => (
+        <span
+          key={i}
+          className="bg-leaf"
+          style={
+            {
+              left: `${l.x}%`,
+              top: `${l.y}%`,
+              width: `${l.s}px`,
+              '--speed': l.speed,
+              '--rot': `${l.r}deg`,
+              '--sway': `${l.sway}s`,
+            } as React.CSSProperties
+          }
+        >
+          <svg viewBox="0 0 600 660">
+            <path d={LEAF} />
+            <path d={MID} className="bg-leaf-vein" />
+          </svg>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function Milestones() {
   const [ref, inView] = useReveal<HTMLDivElement>();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const listRef = useRef<HTMLOListElement | null>(null);
+  const fillRef = useRef<HTMLLIElement | null>(null);
+  const [inSection, setInSection] = useState(false);
+
+  // The vine fills in green down to the middle of the screen as you scroll,
+  // and each month's leaf unfurls once the vine reaches it. The same scroll
+  // position drives the drifting background leaves.
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const list = listRef.current;
+      const section = sectionRef.current;
+      if (!list || !section) return;
+      const rect = list.getBoundingClientRect();
+      const reach = window.innerHeight * 0.62 - rect.top;
+      const grown = Math.max(0, Math.min(rect.height, reach));
+      if (fillRef.current) fillRef.current.style.height = `${grown}px`;
+      list.querySelectorAll<HTMLLIElement>(':scope > .milestone').forEach((li) => {
+        li.classList.toggle('is-reached', li.offsetTop + 18 <= grown);
+      });
+      const srect = section.getBoundingClientRect();
+      setInSection(srect.top < window.innerHeight && srect.bottom > 0);
+      document.documentElement.style.setProperty('--about-scroll', `${Math.round(-srect.top)}`);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
-    <section className="about" aria-labelledby="about-title">
+    <section ref={sectionRef} className="about" aria-labelledby="about-title">
+      <BackgroundLeaves visible={inSection} />
       <div ref={ref} className={`section-head ${inView ? 'is-in' : ''}`}>
         <p className="eyebrow">A year of</p>
         <h2 id="about-title">BRIXX</h2>
         <p className="lede">Twelve months of firsts, and the kalo keeps growing.</p>
       </div>
-      <ol className="timeline">
+      <ol ref={listRef} className="timeline">
+        <li className="vine-fill" ref={fillRef} aria-hidden="true" />
         {MILESTONES.map((m, i) => (
           <MilestoneItem key={i} m={m} i={i} />
         ))}

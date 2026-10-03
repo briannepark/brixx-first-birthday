@@ -195,13 +195,34 @@ body {
   bottom: 8px;
   width: 2px;
   border-radius: 2px;
-  background: linear-gradient(var(--leaf), rgba(91, 118, 66, 0.25));
+  background: #d6dcc9;
+}
+/* The green part of the vine, grown by script as you scroll */
+.vine-fill {
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  width: 2px;
+  height: 0;
+  max-height: calc(100% - 16px);
+  border-radius: 2px;
+  background: var(--leaf);
+  box-shadow: 0 0 0 1px rgba(91, 118, 66, 0.08);
+  transition: height 0.12s linear;
 }
 .milestone { position: relative; margin: 0 0 18px; opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .milestone.is-in { opacity: 1; transform: none; }
 .milestone-node { position: absolute; left: -34px; top: 14px; width: 24px; height: 26px; }
-.milestone-node svg { width: 100%; height: 100%; fill: var(--leaf); transform: scale(0.4) rotate(-40deg); transition: transform 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) 0.2s; }
-.milestone.is-in .milestone-node svg { transform: none; }
+.milestone-node svg {
+  width: 100%;
+  height: 100%;
+  fill: #c9d2bb;
+  transform-origin: 50% 90%;
+  transform: scale(0.35) rotate(-70deg);
+  transition: transform 0.7s cubic-bezier(0.3, 1.6, 0.5, 1), fill 0.5s ease;
+}
+/* Each month's leaf unfurls when the growing vine reaches it */
+.milestone.is-reached .milestone-node svg { transform: none; fill: var(--leaf); }
 .milestone-card {
   display: flex;
   flex-direction: column;
@@ -560,4 +581,56 @@ input[type='text']:focus, textarea:focus { outline: none; border-color: var(--le
 @media (prefers-reduced-motion: reduce) {
   .event { opacity: 1; transform: none; }
   .event-dot { transform: none; }
+}
+
+/* ── Road trip / flight paths under a moment ───────────────── */
+.trip { display: block; width: 100%; max-width: 240px; height: auto; margin: 6px 0 2px; overflow: visible; }
+.trip-route { fill: none; stroke: var(--leaf); stroke-width: 2; stroke-dasharray: 0.1 6; stroke-linecap: round; }
+.trip-start { fill: #c9d2bb; }
+.trip-end { fill: var(--leaf); }
+.veh-body { fill: var(--leaf-dark); }
+.veh-window { fill: #e8eedc; }
+.veh-wheel { fill: var(--ink); stroke: #e8eedc; stroke-width: 1.2; }
+.trip-plane .veh-body { fill: var(--leaf-dark); }
+
+/* ── Drifting background leaves (computer screens only) ────── */
+.about { position: relative; }
+.bg-leaves { display: none; }
+@media (min-width: 900px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .page { position: relative; z-index: 1; }
+  .bg-leaves {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+  .bg-leaves.is-visible { opacity: 1; }
+  .bg-leaf {
+    position: absolute;
+    display: block;
+    /* parallax: each leaf drifts up at its own speed as the section scrolls */
+    transform: translateY(calc(var(--about-scroll, 0) * var(--speed) * -1px)) rotate(var(--rot));
+    will-change: transform;
+  }
+  .bg-leaf svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    fill: var(--leaf);
+    opacity: 0.09;
+    animation: leaf-drift var(--sway) ease-in-out infinite alternate;
+  }
+  .bg-leaf-vein { fill: none; stroke: var(--paper); stroke-width: 10; opacity: 0.6; }
+  @keyframes leaf-drift {
+    from { transform: translate(-10px, -6px) rotate(-6deg); }
+    to { transform: translate(12px, 10px) rotate(7deg); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .milestone-node svg { transform: none; fill: var(--leaf); }
+  .vine-fill { transition: none; }
 }
