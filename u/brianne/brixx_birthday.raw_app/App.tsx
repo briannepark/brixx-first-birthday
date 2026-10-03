@@ -588,6 +588,13 @@ function RsvpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 function glideTo(el: Element | null, onArrive?: () => void) {
   if (!el) return;
   const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  // If this frame can't scroll itself (some phones scroll the outer page
+  // instead), let the browser do the smooth scroll across frames.
+  if (maxScroll < 4) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (onArrive) window.setTimeout(onArrive, 1100);
+    return;
+  }
   const target = Math.min(maxScroll, Math.max(0, el.getBoundingClientRect().top + window.scrollY - 24));
   const start = window.scrollY;
   const distance = target - start;
@@ -641,18 +648,40 @@ export default function App() {
   // The floating RSVP pill appears at the bottom of the screen (just under the
   // down arrow) as soon as the guest starts scrolling, and hides again while the
   // big RSVP section is on screen so the two never overlap.
+  //
+  // The page runs inside Windmill's frame, and on phones the scrolling can happen
+  // in the frame, in a container, or in the outer page. So instead of trusting
+  // window.scrollY alone, we watch a 1px marker at the very top of the page:
+  // once it leaves the screen (by any kind of scroll), the guest has scrolled.
   useEffect(() => {
-    const onScroll = () => setPastHero(window.scrollY > 8);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const marker = document.querySelector('.top-marker');
     const cta = document.querySelector('.cta');
+    let markerGone = false;
+    let rectPast = false;
+    const apply = () => setPastHero(markerGone || rectPast || window.scrollY > 8);
+    const onAnyScroll = () => {
+      rectPast = !!marker && marker.getBoundingClientRect().top < -8;
+      apply();
+    };
+    document.addEventListener('scroll', onAnyScroll, { passive: true, capture: true });
+    window.addEventListener('scroll', onAnyScroll, { passive: true });
     let io: IntersectionObserver | undefined;
-    if (cta && 'IntersectionObserver' in window) {
-      io = new IntersectionObserver(([e]) => setCtaVisible(e.isIntersecting), { threshold: 0 });
-      io.observe(cta);
+    if ('IntersectionObserver' in window) {
+      io = new IntersectionObserver((entries) =>
+        entries.forEach((e) => {
+          if (e.target === marker) {
+            markerGone = !e.isIntersecting;
+            apply();
+          } else setCtaVisible(e.isIntersecting);
+        }),
+      );
+      if (marker) io.observe(marker);
+      if (cta) io.observe(cta);
     }
+    onAnyScroll();
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onAnyScroll, { capture: true } as any);
+      window.removeEventListener('scroll', onAnyScroll);
       io?.disconnect();
     };
   }, []);
@@ -661,6 +690,7 @@ export default function App() {
   return (
     <>
       <main className="page">
+        <div className="top-marker" aria-hidden="true" />
         <div ref={heroRef} className="hero">
           <LeafCard />
           <p className="facts">
