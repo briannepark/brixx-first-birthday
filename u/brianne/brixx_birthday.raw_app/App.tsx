@@ -440,13 +440,51 @@ function RsvpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
+/**
+ * Smoothly scroll the page to an element, slow enough to glide through the
+ * milestones on the way. Any touch, wheel or key press hands control back.
+ */
+function glideTo(el: Element | null, onArrive?: () => void) {
+  if (!el) return;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const target = Math.min(maxScroll, Math.max(0, el.getBoundingClientRect().top + window.scrollY - 24));
+  const start = window.scrollY;
+  const distance = target - start;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || Math.abs(distance) < 4) {
+    window.scrollTo(0, target);
+    onArrive?.();
+    return;
+  }
+  const duration = Math.min(3200, Math.max(800, Math.abs(distance) * 0.9));
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  let cancelled = false;
+  const cancel = () => (cancelled = true);
+  const events = ['wheel', 'touchstart', 'keydown'];
+  events.forEach((ev) => window.addEventListener(ev, cancel, { once: true, passive: true }));
+  const t0 = performance.now();
+  const step = (now: number) => {
+    if (cancelled) return;
+    const t = Math.min(1, (now - t0) / duration);
+    window.scrollTo(0, start + distance * ease(t));
+    if (t < 1) requestAnimationFrame(step);
+    else {
+      events.forEach((ev) => window.removeEventListener(ev, cancel));
+      onArrive?.();
+    }
+  };
+  requestAnimationFrame(step);
+}
+
 function RsvpInvite({ onOpen }: { onOpen: () => void }) {
   const [ref, inView] = useReveal<HTMLDivElement>();
   return (
     <section ref={ref} className={`cta ${inView ? 'is-in' : ''}`} aria-labelledby="cta-title">
       <h2 id="cta-title">Will you celebrate with us?</h2>
-      <p>Saturday, 21 November · 4:00 PM · Kāneʻohe</p>
-      <button type="button" className="submit cta-button" onClick={onOpen}>
+      <p>
+        <span className="nowrap">Saturday, 21 November</span> · <span className="nowrap">4:00 PM</span> · <span className="nowrap">Kāneʻohe</span>
+      </p>
+      <button type="button" className="submit cta-button" id="cta-rsvp" onClick={onOpen}>
         RSVP
       </button>
     </section>
@@ -490,12 +528,35 @@ export default function App() {
               Get directions
             </a>
           </p>
+          <button type="button" className="scroll-cue" aria-label="Scroll down to Brixx’s first year" onClick={() => glideTo(document.querySelector('.about'))}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
         </div>
         <Milestones />
         <RsvpInvite onOpen={() => setOpen(true)} />
       </main>
-      <button type="button" className={`float-rsvp ${showFloat ? 'is-shown' : ''}`} onClick={() => setOpen(true)} tabIndex={showFloat ? 0 : -1} aria-hidden={!showFloat}>
+      <button
+        type="button"
+        className={`float-rsvp ${showFloat ? 'is-shown' : ''}`}
+        onClick={() =>
+          glideTo(document.querySelector('.cta'), () => {
+            const btn = document.getElementById('cta-rsvp');
+            btn?.focus({ preventScroll: true });
+            btn?.classList.remove('is-nudged');
+            void btn?.offsetWidth; // restart the nudge animation
+            btn?.classList.add('is-nudged');
+          })
+        }
+        tabIndex={showFloat ? 0 : -1}
+        aria-hidden={!showFloat}
+        aria-label="Go to RSVP"
+      >
         RSVP
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </button>
       <RsvpSheet open={open} onClose={() => setOpen(false)} />
     </>
