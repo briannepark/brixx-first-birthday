@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { backend } from './wmill';
 import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
+import { PHOTO_BIRTH } from './photos';
 
 // ── Brixx's first year ───────────────────────────────────────────────────
 // Add, remove or reorder entries freely.
@@ -11,7 +12,7 @@ import { LEAF, INNER, MID, PRIM, FINE, JUNCTION } from './leaf';
 //   photo:   '' for a leaf-shaped placeholder, or an image URL cut into a leaf
 type Milestone = { when?: string; heading: string; title?: string; note?: string; weight?: string; events?: string[]; photo?: string };
 const MILESTONES: Milestone[] = [
-  { when: 'November 20, 2025', heading: 'Hello, world!', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: '' },
+  { when: 'November 20, 2025', heading: '[Hello, world!]', note: 'Brixx Haloa Auguillard was born in Michigan.', weight: '10 lbs 2 oz', photo: PHOTO_BIRTH },
   { heading: 'Month 1', weight: '12 lbs 15 oz', events: ['First Thanksgiving'], photo: '' },
   { heading: 'Month 2', weight: '15 lbs 4 oz', events: ['First bath', 'First time in a high chair'], photo: '' },
   { heading: 'Month 3', events: ['Slept in his crib for the first time'], photo: '' },
@@ -144,6 +145,8 @@ function LeafPhoto({ src, alt, id }: { src?: string; alt: string; id: string }) 
       <defs>
         <clipPath id={id}>
           <path d={LEAF} />
+          {/* fill the thin notch slit so it doesn't cut across a face */}
+          <rect x="303" y="100" width="16" height="104" />
         </clipPath>
       </defs>
       {src ? (
