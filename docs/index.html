@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brixx’s 1st Lūʻau</title>
+<meta name="description" content="Brixx is turning one! Saturday, 21 November 2026 at 4:00 PM in Kāneʻohe. Tap to see the invitation and RSVP.">
+<!-- What shows up as the link preview when this link is texted or shared -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Brixx is turning one!">
+<meta property="og:title" content="Brixx’s 1st Lūʻau">
+<meta property="og:description" content="Saturday, 21 November 2026 · 4:00 PM · Kāneʻohe. Tap to see the invitation and RSVP.">
+<meta property="og:url" content="https://briannepark.github.io/brixx-first-birthday/">
+<meta property="og:image" content="https://briannepark.github.io/brixx-first-birthday/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Brixx grinning, framed in a kalo leaf, next to the words BRIXX is turning one!">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Brixx’s 1st Lūʻau">
+<meta name="twitter:image" content="https://briannepark.github.io/brixx-first-birthday/preview.jpg">
+<meta name="theme-color" content="#ece6d8">
+<style>
+  :root { color-scheme: light; }
+  html, body { margin: 0; height: 100%; background: #ece6d8; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 16px; box-sizing: border-box; font-family: 'Jost', 'Avenir Next', 'Futura', system-ui, sans-serif; color: #2b3522; text-align: center; }
+  img { width: min(100%, 520px); height: auto; border-radius: 18px; }
+  a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 28px; border-radius: 999px; background: #5b7642; color: #f5f0e2; font-size: 17px; font-weight: 500; letter-spacing: 0.06em; text-decoration: none; }
+  p { margin: 0; color: #5d6552; font-size: 15px; }
+</style>
+</head>
+<body>
+<img src="preview.jpg" alt="Brixx is turning one! 21 November 2026, Saturday, 4:00 PM">
+<p>Opening the invitation…</p>
+<a id="go" href="https://app.windmill.dev/a/brixx-turns-one">Open the invitation</a>
+<script>
+  // Send guests straight on to the invitation. Link-preview robots (which build
+  // the picture card in Messages) are left on this page so they read the
+  // preview above instead of Windmill's.
+  (function () {
+    var target = document.getElementById('go').href;
+    var ua = navigator.userAgent || '';
+    if (/facebookexternalhit|Facebot|Twitterbot|Slackbot|WhatsApp|TelegramBot|Discordbot|LinkedInBot|bot|crawler|spider|preview/i.test(ua)) return;
+    window.location.replace(target);
+  })();
+</script>
+</body>
+</html>
